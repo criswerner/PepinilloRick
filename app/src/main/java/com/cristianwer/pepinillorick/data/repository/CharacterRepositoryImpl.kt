@@ -27,6 +27,10 @@ internal class CharacterRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getCharacterById(id: Int): Character? {
+        return database.characterDao.getCharacterById(id)?.toDomain()
+    }
+
     override suspend fun syncCharacters(page: Int): Result<Unit> {
         return try {
             val response = apiService.getCharacters(page)

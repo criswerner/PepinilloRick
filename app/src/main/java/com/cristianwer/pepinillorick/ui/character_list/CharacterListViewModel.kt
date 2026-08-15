@@ -21,7 +21,6 @@ import javax.inject.Inject
  * UI state for the Character List screen.
  */
 internal data class CharacterListUiState(
-    val title: String = "Personajes",
     val isLoading: Boolean = false,
     val error: String? = null,
     val currentPage: Int = 1,

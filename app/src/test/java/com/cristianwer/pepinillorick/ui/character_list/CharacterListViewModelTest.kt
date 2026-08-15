@@ -44,12 +44,13 @@ internal class CharacterListViewModelTest {
     }
 
     @Test
-    fun `initial uiState should have default title`() = runTest {
+    fun `initial uiState should have default values`() = runTest {
         // When
         val state = viewModel.uiState.first()
 
         // Then
-        assertEquals("Personajes", state.title)
+        assertEquals(false, state.isLoading)
+        assertEquals(1, state.currentPage)
     }
 
     @Test
