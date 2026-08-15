@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 internal data class CharacterListUiState(
-    val title: String = "Rick & Morty Characters"
+    val title: String = "Personajes"
 )
 
 @HiltViewModel
