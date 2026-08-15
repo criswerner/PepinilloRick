@@ -24,4 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Pepinillo Rick"
 include(":app")
-include(":Platform")
+include(":platform")
