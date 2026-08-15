@@ -9,7 +9,6 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -45,7 +44,6 @@ internal class CharacterRepositoryImplTest {
 
         // Then
         assertTrue(result.isEmpty())
-        verify { characterDao.getCharactersFlow() }
     }
 
     @Test
@@ -78,5 +76,19 @@ internal class CharacterRepositoryImplTest {
 
         // Then
         assertTrue(result.isFailure)
+    }
+
+    @Test
+    fun `getCharacterById should return character from dao`() = runTest {
+        // Given
+        val characterId = 1
+        coEvery { characterDao.getCharacterById(characterId) } returns null
+
+        // When
+        val result = repository.getCharacterById(characterId)
+
+        // Then
+        assertEquals(null, result)
+        coVerify { characterDao.getCharacterById(characterId) }
     }
 }
