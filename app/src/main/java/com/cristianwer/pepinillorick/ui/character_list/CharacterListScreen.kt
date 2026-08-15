@@ -2,29 +2,44 @@ package com.cristianwer.pepinillorick.ui.character_list
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.paging.LoadState
-import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.itemContentType
-import androidx.paging.compose.itemKey
 import coil.compose.AsyncImage
 import com.cristianwer.pepinillorick.ui.model.CharacterUiModel
 
+/**
+ * Screen that displays the list of Rick & Morty characters.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun CharacterListScreen(
     viewModel: CharacterListViewModel
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val characters = viewModel.characters.collectAsLazyPagingItems()
+    val characters by viewModel.characters.collectAsStateWithLifecycle()
+    val listState = rememberLazyListState()
+
+    // Detect when we reach the end of the list to load more
+    val shouldLoadMore = remember {
+        derivedStateOf {
+            val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()
+            lastVisibleItem != null && lastVisibleItem.index >= listState.layoutInfo.totalItemsCount - 5
+        }
+    }
+
+    LaunchedEffect(shouldLoadMore.value) {
+        if (shouldLoadMore.value && !uiState.isLoading) {
+            viewModel.loadCharacters()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -39,55 +54,40 @@ internal fun CharacterListScreen(
                 .padding(paddingValues)
         ) {
             LazyColumn(
+                state = listState,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(
-                    count = characters.itemCount,
-                    key = characters.itemKey { it.id },
-                    contentType = characters.itemContentType { "character" }
-                ) { index ->
-                    val character = characters[index]
-                    if (character != null) {
-                        CharacterItem(character = character)
+                    items = characters,
+                    key = { it.id }
+                ) { character ->
+                    CharacterItem(character = character)
+                }
+
+                if (uiState.isLoading) {
+                    item {
+                        LoadingIndicator(modifier = Modifier.fillMaxWidth())
                     }
                 }
 
-                when (val appendState = characters.loadState.append) {
-                    is LoadState.Loading -> {
-                        item {
-                            LoadingIndicator(modifier = Modifier.fillMaxWidth())
-                        }
+                if (uiState.error != null) {
+                    item {
+                        ErrorRetryItem(
+                            message = uiState.error ?: "Error",
+                            onRetry = { viewModel.loadCharacters() }
+                        )
                     }
-                    is LoadState.Error -> {
-                        item {
-                            ErrorRetryItem(
-                                message = appendState.error.localizedMessage ?: "Error",
-                                onRetry = { characters.retry() }
-                            )
-                        }
-                    }
-                    is LoadState.NotLoading -> {}
                 }
-            }
-
-            if (characters.loadState.refresh is LoadState.Loading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            }
-
-            if (characters.loadState.refresh is LoadState.Error) {
-                val error = characters.loadState.refresh as LoadState.Error
-                ErrorRetryScreen(
-                    message = error.error.localizedMessage ?: "Error",
-                    onRetry = { characters.retry() },
-                    modifier = Modifier.align(Alignment.Center)
-                )
             }
         }
     }
 }
 
+/**
+ * UI component for a single character item.
+ */
 @Composable
 private fun CharacterItem(character: CharacterUiModel) {
     Card(
@@ -148,20 +148,6 @@ private fun ErrorRetryItem(message: String, onRetry: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(text = message, color = MaterialTheme.colorScheme.error)
-        Button(onClick = onRetry) {
-            Text("Retry")
-        }
-    }
-}
-
-@Composable
-private fun ErrorRetryScreen(message: String, onRetry: () -> Unit, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier.padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(text = message, color = MaterialTheme.colorScheme.error)
-        Spacer(modifier = Modifier.height(8.dp))
         Button(onClick = onRetry) {
             Text("Retry")
         }
