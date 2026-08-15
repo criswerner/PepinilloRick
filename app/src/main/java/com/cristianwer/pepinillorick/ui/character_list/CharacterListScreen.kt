@@ -9,10 +9,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.cristianwer.pepinillorick.R
 import com.cristianwer.pepinillorick.ui.model.CharacterUiModel
 
 /**
@@ -21,7 +23,8 @@ import com.cristianwer.pepinillorick.ui.model.CharacterUiModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun CharacterListScreen(
-    viewModel: CharacterListViewModel
+    viewModel: CharacterListViewModel,
+    onCharacterClick: (Int) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val characters by viewModel.characters.collectAsStateWithLifecycle()
@@ -30,13 +33,17 @@ internal fun CharacterListScreen(
     // Detect when we reach the end of the list to load more
     val shouldLoadMore = remember {
         derivedStateOf {
+            val totalItems = listState.layoutInfo.totalItemsCount
             val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()
-            lastVisibleItem != null && lastVisibleItem.index >= listState.layoutInfo.totalItemsCount - 5
+            
+            // Only trigger if we have items and are near the end.
+            // This prevents triggering before the first page is even shown.
+            totalItems > 0 && lastVisibleItem != null && lastVisibleItem.index >= totalItems - 1
         }
     }
 
-    LaunchedEffect(shouldLoadMore.value) {
-        if (shouldLoadMore.value && !uiState.isLoading) {
+    LaunchedEffect(shouldLoadMore.value, uiState.isLoading) {
+        if (shouldLoadMore.value && !uiState.isLoading && !uiState.isLastPage) {
             viewModel.loadCharacters()
         }
     }
@@ -44,7 +51,7 @@ internal fun CharacterListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = uiState.title) }
+                title = { Text(text = stringResource(id = R.string.character_list_title)) }
             )
         }
     ) { paddingValues ->
@@ -63,7 +70,10 @@ internal fun CharacterListScreen(
                     items = characters,
                     key = { it.id }
                 ) { character ->
-                    CharacterItem(character = character)
+                    CharacterItem(
+                        character = character,
+                        onClick = { onCharacterClick(character.id) }
+                    )
                 }
 
                 if (uiState.isLoading) {
@@ -75,7 +85,7 @@ internal fun CharacterListScreen(
                 if (uiState.error != null) {
                     item {
                         ErrorRetryItem(
-                            message = uiState.error ?: "Error",
+                            message = stringResource(id = R.string.character_list_error),
                             onRetry = { viewModel.loadCharacters() }
                         )
                     }
@@ -89,10 +99,14 @@ internal fun CharacterListScreen(
  * UI component for a single character item.
  */
 @Composable
-private fun CharacterItem(character: CharacterUiModel) {
+private fun CharacterItem(
+    character: CharacterUiModel,
+    onClick: () -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        onClick = onClick
     ) {
         Row(
             modifier = Modifier
@@ -119,7 +133,7 @@ private fun CharacterItem(character: CharacterUiModel) {
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(
-                    text = "Last location:",
+                    text = stringResource(id = R.string.character_list_last_location),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -149,7 +163,7 @@ private fun ErrorRetryItem(message: String, onRetry: () -> Unit) {
     ) {
         Text(text = message, color = MaterialTheme.colorScheme.error)
         Button(onClick = onRetry) {
-            Text("Retry")
+            Text(text = stringResource(id = R.string.character_list_retry))
         }
     }
 }

@@ -21,7 +21,6 @@ import javax.inject.Inject
  * UI state for the Character List screen.
  */
 internal data class CharacterListUiState(
-    val title: String = "Personajes",
     val isLoading: Boolean = false,
     val error: String? = null,
     val currentPage: Int = 1,
@@ -58,9 +57,9 @@ internal class CharacterListViewModel @Inject constructor(
     fun loadCharacters() {
         if (_uiState.value.isLoading || _uiState.value.isLastPage) return
 
+        _uiState.update { it.copy(isLoading = true, error = null) }
+
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-            
             syncCharactersUseCase(_uiState.value.currentPage)
                 .onSuccess {
                     _uiState.update { state ->

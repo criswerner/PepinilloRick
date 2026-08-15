@@ -7,7 +7,6 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -33,7 +32,8 @@ internal class CharacterListViewModelTest {
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         every { getCharactersUseCase() } returns flowOf(emptyList())
-        coEvery { syncCharactersUseCase(any()) } returns Result.success(Unit)
+        // We return a failure by default to avoid the automatic increment in init during setup
+        coEvery { syncCharactersUseCase(any()) } returns Result.failure(Exception("Setup"))
         
         viewModel = CharacterListViewModel(getCharactersUseCase, syncCharactersUseCase)
     }
@@ -44,16 +44,17 @@ internal class CharacterListViewModelTest {
     }
 
     @Test
-    fun `initial uiState should have default title`() = runTest {
+    fun `initial uiState should have default values`() = runTest {
         // When
-        val state = viewModel.uiState.first()
+        val state = viewModel.uiState.value
 
         // Then
-        assertEquals("Personajes", state.title)
+        assertEquals(false, state.isLoading)
+        assertEquals(1, state.currentPage)
     }
 
     @Test
-    fun `loadCharacters should update loading state`() = runTest {
+    fun `loadCharacters should increment page on success`() = runTest {
         // Given
         coEvery { syncCharactersUseCase(any()) } returns Result.success(Unit)
 

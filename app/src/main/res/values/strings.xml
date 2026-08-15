@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">Pepinillo Rick</string>
+
+    <!-- Character List Screen -->
+    <string name="character_list_title">Personajes</string>
+    <string name="character_list_last_location">Última ubicación:</string>
+    <string name="character_list_retry">Reintentar</string>
+    <string name="character_list_error">Ha ocurrido un error al cargar los personajes.</string>
+
+    <!-- Character Detail Screen -->
+    <string name="character_detail_title">Detalle del Personaje</string>
+    <string name="character_detail_status">Estado:</string>
+    <string name="character_detail_species">Especie:</string>
+    <string name="character_detail_gender">Género:</string>
+    <string name="character_detail_origin">Origen:</string>
+    <string name="character_detail_location">Ubicación:</string>
+    <string name="character_detail_episodes">Episodios:</string>
+    <string name="character_detail_not_found">Personaje no encontrado.</string>
 </resources>

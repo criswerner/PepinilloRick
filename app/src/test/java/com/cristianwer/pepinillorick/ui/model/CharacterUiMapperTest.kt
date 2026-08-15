@@ -34,4 +34,28 @@ internal class CharacterUiMapperTest {
         assertEquals("Alive", uiModel.status)
         assertEquals("Space C-137", uiModel.locationName)
     }
+
+    @Test
+    fun `Character toDetailUiModel should map correctly`() {
+        val domain = Character(
+            id = 1,
+            name = "Rick",
+            status = CharacterStatus.ALIVE,
+            species = "Human",
+            type = "",
+            gender = CharacterGender.MALE,
+            origin = Location("Earth", "url"),
+            location = Location("Space C-137", "url"),
+            imageUrl = "image_url",
+            episodes = listOf("ep1", "ep2", "ep3")
+        )
+
+        val detailUiModel = domain.toDetailUiModel()
+
+        assertEquals(domain.id, detailUiModel.id)
+        assertEquals(domain.name, detailUiModel.name)
+        assertEquals("Male", detailUiModel.gender)
+        assertEquals("Earth", detailUiModel.originName)
+        assertEquals(3, detailUiModel.episodeCount)
+    }
 }
