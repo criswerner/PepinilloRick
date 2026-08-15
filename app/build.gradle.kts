@@ -79,4 +79,9 @@ dependencies {
     // Coil
     implementation(libs.coil.compose)
 
+    // Unit Testing
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.androidx.paging.common)
+
 }
