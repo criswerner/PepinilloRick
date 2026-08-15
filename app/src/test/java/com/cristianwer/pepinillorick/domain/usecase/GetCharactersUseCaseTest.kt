@@ -1,6 +1,5 @@
 package com.cristianwer.pepinillorick.domain.usecase
 
-import androidx.paging.PagingData
 import com.cristianwer.pepinillorick.domain.model.Character
 import com.cristianwer.pepinillorick.domain.repository.CharacterRepository
 import io.mockk.every
@@ -25,10 +24,10 @@ internal class GetCharactersUseCaseTest {
     }
 
     @Test
-    fun `invoke should return paging data flow from repository`() {
+    fun `invoke should return characters flow from repository`() {
         // Given
-        val pagingData = PagingData.empty<Character>()
-        val flow = flowOf(pagingData)
+        val characters = emptyList<Character>()
+        val flow = flowOf(characters)
         every { repository.getCharacters() } returns flow
 
         // When
