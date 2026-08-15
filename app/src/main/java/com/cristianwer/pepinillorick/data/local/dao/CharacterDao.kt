@@ -1,5 +1,6 @@
 package com.cristianwer.pepinillorick.data.local.dao
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -11,7 +12,10 @@ import kotlinx.coroutines.flow.Flow
 internal interface CharacterDao {
 
     @Query("SELECT * FROM characters")
-    fun getAllCharacters(): Flow<List<CharacterEntity>>
+    fun getAllCharacters(): PagingSource<Int, CharacterEntity>
+
+    @Query("SELECT * FROM characters")
+    fun getCharactersFlow(): Flow<List<CharacterEntity>>
 
     @Query("SELECT * FROM characters WHERE id = :id")
     suspend fun getCharacterById(id: Int): CharacterEntity?
