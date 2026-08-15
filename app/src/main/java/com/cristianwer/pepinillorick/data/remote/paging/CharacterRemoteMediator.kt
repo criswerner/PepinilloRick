@@ -12,6 +12,16 @@ import com.cristianwer.pepinillorick.data.mapper.toEntity
 import com.cristianwer.platform.network.service.RickAndMortyApiService
 import java.io.IOException
 
+/**
+ * RemoteMediator that handles pagination for the Rick & Morty characters by coordinating
+ * between the remote API and the local Room database.
+ *
+ * It implements an offline-first strategy by fetching data from the network when needed
+ * and persisting it in the local database, which serves as the single source of truth.
+ *
+ * @property apiService The RickAndMortyApiService used to fetch data from the network.
+ * @property database The local Room database where characters and remote keys are stored.
+ */
 @OptIn(ExperimentalPagingApi::class)
 internal class CharacterRemoteMediator(
     private val apiService: RickAndMortyApiService,
