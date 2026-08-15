@@ -3,6 +3,7 @@ package com.cristianwer.pepinillorick.di
 import android.content.Context
 import androidx.room.Room
 import com.cristianwer.pepinillorick.data.local.dao.CharacterDao
+import com.cristianwer.pepinillorick.data.local.dao.RemoteKeysDao
 import com.cristianwer.pepinillorick.data.local.database.RickAndMortyDatabase
 import dagger.Module
 import dagger.Provides
@@ -22,12 +23,20 @@ internal object DatabaseModule {
             context,
             RickAndMortyDatabase::class.java,
             RickAndMortyDatabase.DATABASE_NAME
-        ).build()
+        )
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     @Provides
     @Singleton
     fun provideCharacterDao(database: RickAndMortyDatabase): CharacterDao {
         return database.characterDao
+    }
+
+    @Provides
+    @Singleton
+    fun provideRemoteKeysDao(database: RickAndMortyDatabase): RemoteKeysDao {
+        return database.remoteKeysDao
     }
 }

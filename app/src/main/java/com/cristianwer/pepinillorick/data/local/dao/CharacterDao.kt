@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 internal interface CharacterDao {
 
     @Query("SELECT * FROM characters")
-    fun getAllCharacters(): Flow<List<CharacterEntity>>
+    fun getCharactersFlow(): Flow<List<CharacterEntity>>
 
     @Query("SELECT * FROM characters WHERE id = :id")
     suspend fun getCharacterById(id: Int): CharacterEntity?
