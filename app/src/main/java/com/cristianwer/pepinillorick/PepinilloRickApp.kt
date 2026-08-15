@@ -4,4 +4,4 @@ import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
-class PepinilloRickApp : Application()
+internal class PepinilloRickApp : Application()
