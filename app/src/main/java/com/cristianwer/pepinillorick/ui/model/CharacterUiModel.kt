@@ -1,7 +1,9 @@
 package com.cristianwer.pepinillorick.ui.model
 
+import androidx.compose.runtime.Immutable
 import com.cristianwer.pepinillorick.domain.model.Character
 
+@Immutable
 internal data class CharacterUiModel(
     val id: Int,
     val name: String,
