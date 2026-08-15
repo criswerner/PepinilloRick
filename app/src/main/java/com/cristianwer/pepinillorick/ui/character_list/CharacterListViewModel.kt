@@ -57,9 +57,9 @@ internal class CharacterListViewModel @Inject constructor(
     fun loadCharacters() {
         if (_uiState.value.isLoading || _uiState.value.isLastPage) return
 
+        _uiState.update { it.copy(isLoading = true, error = null) }
+
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-            
             syncCharactersUseCase(_uiState.value.currentPage)
                 .onSuccess {
                     _uiState.update { state ->

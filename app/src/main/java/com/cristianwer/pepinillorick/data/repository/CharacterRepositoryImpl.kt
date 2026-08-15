@@ -1,5 +1,6 @@
 package com.cristianwer.pepinillorick.data.repository
 
+import androidx.room.withTransaction
 import com.cristianwer.pepinillorick.data.local.database.RickAndMortyDatabase
 import com.cristianwer.pepinillorick.data.mapper.toDomain
 import com.cristianwer.pepinillorick.data.mapper.toEntity
@@ -36,10 +37,12 @@ internal class CharacterRepositoryImpl @Inject constructor(
             val response = apiService.getCharacters(page)
             val entities = response.results.map { it.toEntity() }
             
-            if (page == 1) {
-                database.characterDao.deleteAllCharacters()
+            database.withTransaction {
+                if (page == 1) {
+                    database.characterDao.deleteAllCharacters()
+                }
+                database.characterDao.insertCharacters(entities)
             }
-            database.characterDao.insertCharacters(entities)
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)

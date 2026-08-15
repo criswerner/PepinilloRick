@@ -1,5 +1,6 @@
 package com.cristianwer.pepinillorick.data.repository
 
+import androidx.room.withTransaction
 import com.cristianwer.pepinillorick.data.local.dao.CharacterDao
 import com.cristianwer.pepinillorick.data.local.database.RickAndMortyDatabase
 import com.cristianwer.platform.data.remote.dto.CharacterResponseDto
@@ -9,6 +10,8 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.slot
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -30,6 +33,12 @@ internal class CharacterRepositoryImplTest {
 
     @Before
     fun setUp() {
+        mockkStatic("androidx.room.RoomDatabaseKt")
+        val transactionLambda = slot<suspend () -> Any?>()
+        coEvery { database.withTransaction(capture(transactionLambda)) } coAnswers {
+            transactionLambda.captured.invoke()
+        }
+
         every { database.characterDao } returns characterDao
         repository = CharacterRepositoryImpl(apiService, database)
     }

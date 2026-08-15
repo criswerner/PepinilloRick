@@ -33,13 +33,17 @@ internal fun CharacterListScreen(
     // Detect when we reach the end of the list to load more
     val shouldLoadMore = remember {
         derivedStateOf {
+            val totalItems = listState.layoutInfo.totalItemsCount
             val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()
-            lastVisibleItem != null && lastVisibleItem.index >= listState.layoutInfo.totalItemsCount - 5
+            
+            // Only trigger if we have items and are near the end.
+            // This prevents triggering before the first page is even shown.
+            totalItems > 0 && lastVisibleItem != null && lastVisibleItem.index >= totalItems - 1
         }
     }
 
-    LaunchedEffect(shouldLoadMore.value) {
-        if (shouldLoadMore.value && !uiState.isLoading) {
+    LaunchedEffect(shouldLoadMore.value, uiState.isLoading) {
+        if (shouldLoadMore.value && !uiState.isLoading && !uiState.isLastPage) {
             viewModel.loadCharacters()
         }
     }
