@@ -27,8 +27,13 @@ internal fun CharacterListScreen(
     onCharacterClick: (Int) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val characters by viewModel.characters.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
+
+    LaunchedEffect(Unit) {
+        if (uiState.characters.isEmpty()) {
+            viewModel.loadCharacters()
+        }
+    }
 
     // Detect when we reach the end of the list to load more
     val shouldLoadMore = remember {
@@ -36,8 +41,6 @@ internal fun CharacterListScreen(
             val totalItems = listState.layoutInfo.totalItemsCount
             val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()
             
-            // Only trigger if we have items and are near the end.
-            // This prevents triggering before the first page is even shown.
             totalItems > 0 && lastVisibleItem != null && lastVisibleItem.index >= totalItems - 1
         }
     }
@@ -67,7 +70,7 @@ internal fun CharacterListScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(
-                    items = characters,
+                    items = uiState.characters,
                     key = { it.id }
                 ) { character ->
                     CharacterItem(
