@@ -5,12 +5,15 @@ import com.cristianwer.pepinillorick.domain.model.Character
 import com.cristianwer.pepinillorick.domain.model.CharacterGender
 import com.cristianwer.pepinillorick.domain.model.CharacterStatus
 import com.cristianwer.pepinillorick.domain.model.Location
-import com.cristianwer.pepinillorick.domain.usecase.GetCharacterByIdUseCase
+import com.cristianwer.pepinillorick.domain.usecase.ObserveCharacterUseCase
+import com.cristianwer.pepinillorick.domain.usecase.ToggleFavoriteUseCase
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -29,9 +32,12 @@ import org.junit.Test
 internal class CharacterDetailViewModelTest {
 
     private lateinit var viewModel: CharacterDetailViewModel
-    private val getCharacterByIdUseCase: GetCharacterByIdUseCase = mockk()
+    private val observeCharacterUseCase: ObserveCharacterUseCase = mockk()
+    private val toggleFavoriteUseCase: ToggleFavoriteUseCase = mockk()
     private val savedStateHandle: SavedStateHandle = mockk()
     private val testDispatcher = UnconfinedTestDispatcher()
+    
+    private val characterFlow = MutableStateFlow<Character?>(null)
 
     private val sampleCharacter = Character(
         id = 1,
@@ -43,12 +49,15 @@ internal class CharacterDetailViewModelTest {
         origin = Location("Earth", "url"),
         location = Location("Earth", "url"),
         imageUrl = "image_url",
-        episodes = listOf("ep1")
+        episodes = listOf("ep1"),
+        isFavorite = false
     )
 
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
+        every { observeCharacterUseCase(any()) } returns characterFlow
+        coEvery { toggleFavoriteUseCase(any(), any()) } returns Unit
     }
 
     @After
@@ -57,51 +66,33 @@ internal class CharacterDetailViewModelTest {
     }
 
     @Test
-    fun `init should load character when id is present in savedStateHandle`() = runTest {
+    fun `init should observe character when id is present in savedStateHandle`() = runTest {
         // Given
         val characterId = 1
         every { savedStateHandle.get<Int>("characterId") } returns characterId
-        coEvery { getCharacterByIdUseCase(characterId) } returns sampleCharacter
+        characterFlow.value = sampleCharacter
 
         // When
-        viewModel = CharacterDetailViewModel(getCharacterByIdUseCase, savedStateHandle)
+        viewModel = CharacterDetailViewModel(observeCharacterUseCase, toggleFavoriteUseCase, savedStateHandle)
 
         // Then
         val state = viewModel.uiState.value
         assertNotNull(state.character)
         assertEquals(sampleCharacter.name, state.character?.name)
-        assertEquals(false, state.isLoading)
     }
 
     @Test
-    fun `init should not load character when id is absent in savedStateHandle`() = runTest {
-        // Given
-        every { savedStateHandle.get<Int>("characterId") } returns null
-
-        // When
-        viewModel = CharacterDetailViewModel(getCharacterByIdUseCase, savedStateHandle)
-
-        // Then
-        val state = viewModel.uiState.value
-        assertNull(state.character)
-        assertEquals(false, state.isLoading)
-    }
-
-    @Test
-    fun `loadCharacter should update state with character details`() = runTest {
+    fun `toggleFavorite should call use case with current character info`() = runTest {
         // Given
         val characterId = 1
-        every { savedStateHandle.get<Int>("characterId") } returns null
-        coEvery { getCharacterByIdUseCase(characterId) } returns sampleCharacter
-        viewModel = CharacterDetailViewModel(getCharacterByIdUseCase, savedStateHandle)
+        every { savedStateHandle.get<Int>("characterId") } returns characterId
+        characterFlow.value = sampleCharacter
+        viewModel = CharacterDetailViewModel(observeCharacterUseCase, toggleFavoriteUseCase, savedStateHandle)
 
         // When
-        viewModel.loadCharacter(characterId)
+        viewModel.toggleFavorite()
 
         // Then
-        val state = viewModel.uiState.value
-        assertNotNull(state.character)
-        assertEquals(sampleCharacter.id, state.character?.id)
-        assertEquals(false, state.isLoading)
+        coVerify { toggleFavoriteUseCase(characterId, true) }
     }
 }

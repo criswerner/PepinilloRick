@@ -6,7 +6,9 @@ import com.cristianwer.pepinillorick.domain.model.CharacterStatus
 import com.cristianwer.pepinillorick.domain.model.Location
 import com.cristianwer.pepinillorick.domain.usecase.GetCharactersUseCase
 import com.cristianwer.pepinillorick.domain.usecase.SyncCharactersUseCase
+import com.cristianwer.pepinillorick.domain.usecase.ToggleFavoriteUseCase
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
@@ -32,6 +34,7 @@ internal class CharacterListViewModelTest {
     private lateinit var viewModel: CharacterListViewModel
     private val getCharactersUseCase: GetCharactersUseCase = mockk()
     private val syncCharactersUseCase: SyncCharactersUseCase = mockk()
+    private val toggleFavoriteUseCase: ToggleFavoriteUseCase = mockk()
     private val testDispatcher = UnconfinedTestDispatcher()
     
     private val charactersFlow = MutableStateFlow<List<Character>>(emptyList())
@@ -54,13 +57,23 @@ internal class CharacterListViewModelTest {
         Dispatchers.setMain(testDispatcher)
         every { getCharactersUseCase() } returns charactersFlow
         coEvery { syncCharactersUseCase(any()) } returns Result.success(Unit)
+        coEvery { toggleFavoriteUseCase(any(), any()) } returns Unit
         
-        viewModel = CharacterListViewModel(getCharactersUseCase, syncCharactersUseCase)
+        viewModel = CharacterListViewModel(getCharactersUseCase, syncCharactersUseCase, toggleFavoriteUseCase)
     }
 
     @After
     fun tearDown() {
         Dispatchers.resetMain()
+    }
+
+    @Test
+    fun `toggleFavorite should call use case`() = runTest {
+        // When
+        viewModel.toggleFavorite(1, true)
+
+        // Then
+        coVerify { toggleFavoriteUseCase(1, true) }
     }
 
     @Test

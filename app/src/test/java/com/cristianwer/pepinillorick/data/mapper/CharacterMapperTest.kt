@@ -6,6 +6,7 @@ import com.cristianwer.pepinillorick.domain.model.CharacterStatus
 import com.cristianwer.platform.data.remote.dto.CharacterDto
 import com.cristianwer.platform.data.remote.dto.LocationDto
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Test
 
 /**
@@ -39,6 +40,7 @@ internal class CharacterMapperTest {
         assertEquals(CharacterGender.MALE, domain.gender)
         assertEquals(characterDto.origin.name, domain.origin.name)
         assertEquals(characterDto.episode, domain.episodes)
+        assertFalse(domain.isFavorite)
     }
 
     @Test
@@ -73,5 +75,6 @@ internal class CharacterMapperTest {
         assertEquals(entity.id, domain.id)
         assertEquals(listOf("ep1", "ep2"), domain.episodes)
         assertEquals(CharacterStatus.ALIVE, domain.status)
+        assertFalse(domain.isFavorite)
     }
 }
