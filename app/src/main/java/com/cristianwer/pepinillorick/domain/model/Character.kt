@@ -24,7 +24,8 @@ internal data class Character(
     val origin: Location,
     val location: Location,
     val imageUrl: String,
-    val episodes: List<String>
+    val episodes: List<String>,
+    val isFavorite: Boolean = false
 )
 
 /**

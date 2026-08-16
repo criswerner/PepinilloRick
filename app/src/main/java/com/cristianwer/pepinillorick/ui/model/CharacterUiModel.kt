@@ -13,7 +13,8 @@ internal data class CharacterUiModel(
     val status: String,
     val species: String,
     val imageUrl: String,
-    val locationName: String
+    val locationName: String,
+    val isFavorite: Boolean
 )
 
 /**
@@ -26,7 +27,8 @@ internal fun Character.toUiModel(): CharacterUiModel {
         status = status.value,
         species = species,
         imageUrl = imageUrl,
-        locationName = location.name
+        locationName = location.name,
+        isFavorite = isFavorite
     )
 }
 
@@ -43,7 +45,8 @@ internal data class CharacterDetailUiModel(
     val originName: String,
     val locationName: String,
     val imageUrl: String,
-    val episodeCount: Int
+    val episodeCount: Int,
+    val isFavorite: Boolean
 )
 
 /**
@@ -59,6 +62,7 @@ internal fun Character.toDetailUiModel(): CharacterDetailUiModel {
         originName = origin.name,
         locationName = location.name,
         imageUrl = imageUrl,
-        episodeCount = episodes.size
+        episodeCount = episodes.size,
+        isFavorite = isFavorite
     )
 }

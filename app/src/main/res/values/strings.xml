@@ -6,6 +6,13 @@
     <string name="character_list_last_location">Última ubicación:</string>
     <string name="character_list_retry">Reintentar</string>
     <string name="character_list_error">Ha ocurrido un error al cargar los personajes.</string>
+    <string name="character_list_favorite">Favorito</string>
+    <string name="character_list_not_favorite">No favorito</string>
+    <string name="character_list_go_to_favorites">Ver favoritos</string>
+
+    <!-- Favorite List Screen -->
+    <string name="favorite_list_title">Mis Favoritos</string>
+    <string name="favorite_list_empty">Aún no tienes personajes favoritos.</string>
 
     <!-- Character Detail Screen -->
     <string name="character_detail_title">Detalle del Personaje</string>

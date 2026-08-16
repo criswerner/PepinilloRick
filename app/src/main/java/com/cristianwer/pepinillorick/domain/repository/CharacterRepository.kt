@@ -13,12 +13,25 @@ internal interface CharacterRepository {
     fun getCharacters(): Flow<List<Character>>
 
     /**
+     * Retrieves a stream of characters marked as favorites.
+     */
+    fun getFavoriteCharacters(): Flow<List<Character>>
+
+    /**
      * Retrieves a specific character by their unique identifier.
      *
      * @param id The unique identifier of the character.
      * @return The character if found, null otherwise.
      */
     suspend fun getCharacterById(id: Int): Character?
+
+    /**
+     * Retrieves a specific character as a stream by their unique identifier.
+     *
+     * @param id The unique identifier of the character.
+     * @return A [Flow] emitting the character if found, null otherwise.
+     */
+    fun getCharacterByIdFlow(id: Int): Flow<Character?>
 
     /**
      * Synchronizes characters from the network to the local database.
@@ -29,4 +42,12 @@ internal interface CharacterRepository {
      * @return Result indicating success or failure.
      */
     suspend fun syncCharacters(forceRefresh: Boolean = false): Result<Unit>
+
+    /**
+     * Toggles the favorite status of a character.
+     *
+     * @param id The unique identifier of the character.
+     * @param isFavorite The new favorite status.
+     */
+    suspend fun toggleFavorite(id: Int, isFavorite: Boolean)
 }

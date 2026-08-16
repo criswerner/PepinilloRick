@@ -3,7 +3,8 @@ package com.cristianwer.pepinillorick.ui.character_detail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cristianwer.pepinillorick.domain.usecase.GetCharacterByIdUseCase
+import com.cristianwer.pepinillorick.domain.usecase.ObserveCharacterUseCase
+import com.cristianwer.pepinillorick.domain.usecase.ToggleFavoriteUseCase
 import com.cristianwer.pepinillorick.ui.model.CharacterDetailUiModel
 import com.cristianwer.pepinillorick.ui.model.toDetailUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,12 +31,14 @@ internal data class CharacterDetailUiState(
 /**
  * ViewModel for the Character Detail screen.
  *
- * @property getCharacterByIdUseCase The use case to fetch character details.
+ * @property observeCharacterUseCase The use case to observe character details.
+ * @property toggleFavoriteUseCase The use case to toggle favorite status.
  * @property savedStateHandle Handle to access navigation arguments.
  */
 @HiltViewModel
 internal class CharacterDetailViewModel @Inject constructor(
-    private val getCharacterByIdUseCase: GetCharacterByIdUseCase,
+    private val observeCharacterUseCase: ObserveCharacterUseCase,
+    private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -44,28 +47,35 @@ internal class CharacterDetailViewModel @Inject constructor(
 
     init {
         val characterId: Int? = savedStateHandle["characterId"]
-        characterId?.let { loadCharacter(it) }
+        characterId?.let { observeCharacter(it) }
     }
 
     /**
-     * Loads the character details from the repository.
+     * Observes the character details from the repository.
      *
      * @param id The unique identifier of the character.
      */
-    fun loadCharacter(id: Int) {
+    private fun observeCharacter(id: Int) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-            val character = getCharacterByIdUseCase(id)
-            if (character != null) {
+            _uiState.update { it.copy(isLoading = true) }
+            observeCharacterUseCase(id).collect { character ->
                 _uiState.update { 
                     it.copy(
-                        character = character.toDetailUiModel(),
+                        character = character?.toDetailUiModel(),
                         isLoading = false
                     )
                 }
-            } else {
-                _uiState.update { it.copy(isLoading = false) }
             }
+        }
+    }
+
+    /**
+     * Toggles the favorite status of the current character.
+     */
+    fun toggleFavorite() {
+        val character = _uiState.value.character ?: return
+        viewModelScope.launch {
+            toggleFavoriteUseCase(character.id, !character.isFavorite)
         }
     }
 }

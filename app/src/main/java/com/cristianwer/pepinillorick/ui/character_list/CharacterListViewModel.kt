@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cristianwer.pepinillorick.domain.usecase.GetCharactersUseCase
 import com.cristianwer.pepinillorick.domain.usecase.SyncCharactersUseCase
+import com.cristianwer.pepinillorick.domain.usecase.ToggleFavoriteUseCase
 import com.cristianwer.pepinillorick.ui.model.CharacterUiModel
 import com.cristianwer.pepinillorick.ui.model.toUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -35,7 +36,8 @@ internal data class CharacterListUiState(
 @HiltViewModel
 internal class CharacterListViewModel @Inject constructor(
     private val getCharactersUseCase: GetCharactersUseCase,
-    private val syncCharactersUseCase: SyncCharactersUseCase
+    private val syncCharactersUseCase: SyncCharactersUseCase,
+    private val toggleFavoriteUseCase: ToggleFavoriteUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CharacterListUiState())
@@ -86,6 +88,18 @@ internal class CharacterListViewModel @Inject constructor(
                 .onFailure { error ->
                     _uiState.update { it.copy(isLoading = false, error = error.message) }
                 }
+        }
+    }
+
+    /**
+     * Toggles the favorite status of a character.
+     *
+     * @param id The unique identifier of the character.
+     * @param isFavorite The new favorite status.
+     */
+    fun toggleFavorite(id: Int, isFavorite: Boolean) {
+        viewModelScope.launch {
+            toggleFavoriteUseCase(id, isFavorite)
         }
     }
 }

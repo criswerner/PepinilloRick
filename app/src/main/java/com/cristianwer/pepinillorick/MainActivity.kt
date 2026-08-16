@@ -13,6 +13,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.cristianwer.pepinillorick.ui.character_detail.CharacterDetailScreen
 import com.cristianwer.pepinillorick.ui.character_list.CharacterListScreen
+import com.cristianwer.pepinillorick.ui.favorite_list.FavoriteListScreen
 import com.cristianwer.pepinillorick.ui.theme.PepinilloRickTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -48,6 +49,20 @@ private fun RickAndMortyNavHost() {
                 viewModel = hiltViewModel(),
                 onCharacterClick = { characterId ->
                     navController.navigate("character_detail/$characterId")
+                },
+                onFavoritesClick = {
+                    navController.navigate("favorite_list")
+                }
+            )
+        }
+        composable("favorite_list") {
+            FavoriteListScreen(
+                viewModel = hiltViewModel(),
+                onCharacterClick = { characterId ->
+                    navController.navigate("character_detail/$characterId")
+                },
+                onBackClick = {
+                    navController.popBackStack()
                 }
             )
         }
