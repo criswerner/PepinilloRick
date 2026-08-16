@@ -64,8 +64,6 @@ internal class CharacterDetailViewModel @Inject constructor(
                     )
                 }
             } else {
-                // Here we would use a string resource ID if we had one for "not found"
-                // _uiState.update { it.copy(isLoading = false, error = R.string.character_detail_not_found) }
                 _uiState.update { it.copy(isLoading = false) }
             }
         }

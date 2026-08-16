@@ -6,15 +6,18 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.cristianwer.pepinillorick.data.local.entity.RemoteKeysEntity
 
+/**
+ * Data access object for the remote keys table.
+ */
 @Dao
 internal interface RemoteKeysDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(remoteKey: List<RemoteKeysEntity>)
+    suspend fun insertKey(remoteKey: RemoteKeysEntity)
 
-    @Query("SELECT * FROM remote_keys WHERE characterId = :id")
-    suspend fun getRemoteKeysForCharacter(id: Int): RemoteKeysEntity?
+    @Query("SELECT * FROM remote_keys WHERE label = :label")
+    suspend fun getRemoteKey(label: String): RemoteKeysEntity?
 
-    @Query("DELETE FROM remote_keys")
-    suspend fun clearRemoteKeys()
+    @Query("DELETE FROM remote_keys WHERE label = :label")
+    suspend fun deleteKey(label: String)
 }
