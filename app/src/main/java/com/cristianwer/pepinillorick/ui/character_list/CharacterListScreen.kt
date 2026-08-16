@@ -2,7 +2,7 @@ package com.cristianwer.pepinillorick.ui.character_list
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -35,24 +35,25 @@ internal fun CharacterListScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
 
-    // Detect when we need more data: if the list is empty OR we scrolled near the end
+    // Detect when we need more data
     val shouldLoadMore = remember {
         derivedStateOf {
             val totalItems = listState.layoutInfo.totalItemsCount
             val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()
-            
-            // Case 1: Initial load (list is empty)
-            // Case 2: Pagination (last item is visible)
             totalItems == 0 || (lastVisibleItem != null && lastVisibleItem.index >= totalItems - 1)
         }
     }
 
-    // Single source of truth for triggers. 
-    // It re-evaluates if 'shouldLoadMore' becomes true OR if a previous loading finishes.
     LaunchedEffect(shouldLoadMore.value, uiState.isLoading) {
         if (shouldLoadMore.value && !uiState.isLoading) {
+            // Use character count as a simple check to avoid initial trigger if already loading
             viewModel.loadCharacters()
         }
+    }
+
+    // Stable toggle lambda to prevent full list recomposition
+    val onFavoriteToggle: (Int, Boolean) -> Unit = remember(viewModel) {
+        { id, isFavorite -> viewModel.toggleFavorite(id, isFavorite) }
     }
 
     Box(
@@ -64,14 +65,15 @@ internal fun CharacterListScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            itemsIndexed(
-                items = uiState.characters,
-                key = { _, character -> character.id }
-            ) { _, character ->
+            items(
+                items = uiState.characters.items,
+                key = { it.id },
+                contentType = { "character" }
+            ) { character ->
                 CharacterItem(
                     character = character,
-                    onClick = { onCharacterClick(character.id) },
-                    onFavoriteClick = { viewModel.toggleFavorite(character.id, !character.isFavorite) }
+                    onCharacterClick = onCharacterClick,
+                    onFavoriteToggle = onFavoriteToggle
                 )
             }
 
@@ -85,7 +87,7 @@ internal fun CharacterListScreen(
                 item {
                     ErrorRetryItem(
                         message = stringResource(id = R.string.character_list_error),
-                        onRetry = { viewModel.loadCharacters() }
+                        onRetry = viewModel::loadCharacters
                     )
                 }
             }
@@ -99,13 +101,13 @@ internal fun CharacterListScreen(
 @Composable
 private fun CharacterItem(
     character: CharacterUiModel,
-    onClick: () -> Unit,
-    onFavoriteClick: () -> Unit
+    onCharacterClick: (Int) -> Unit,
+    onFavoriteToggle: (Int, Boolean) -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        onClick = onClick
+        onClick = { onCharacterClick(character.id) }
     ) {
         Row(
             modifier = Modifier
@@ -116,8 +118,7 @@ private fun CharacterItem(
             AsyncImage(
                 model = character.imageUrl,
                 contentDescription = character.name,
-                modifier = Modifier
-                    .size(100.dp),
+                modifier = Modifier.size(100.dp),
                 contentScale = ContentScale.Crop
             )
             Spacer(modifier = Modifier.width(16.dp))
@@ -141,14 +142,12 @@ private fun CharacterItem(
                     style = MaterialTheme.typography.bodySmall
                 )
             }
-            IconButton(onClick = onFavoriteClick) {
+            IconButton(
+                onClick = { onFavoriteToggle(character.id, !character.isFavorite) }
+            ) {
                 Icon(
                     imageVector = if (character.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = if (character.isFavorite) {
-                        stringResource(id = R.string.character_list_favorite)
-                    } else {
-                        stringResource(id = R.string.character_list_not_favorite)
-                    },
+                    contentDescription = null,
                     tint = if (character.isFavorite) Color.Red else LocalContentColor.current
                 )
             }

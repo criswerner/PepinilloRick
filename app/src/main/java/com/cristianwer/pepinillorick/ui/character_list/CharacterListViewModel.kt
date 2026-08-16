@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.cristianwer.pepinillorick.domain.usecase.GetCharactersUseCase
 import com.cristianwer.pepinillorick.domain.usecase.SyncCharactersUseCase
 import com.cristianwer.pepinillorick.domain.usecase.ToggleFavoriteUseCase
+import com.cristianwer.pepinillorick.ui.model.CharacterListState
 import com.cristianwer.pepinillorick.ui.model.CharacterUiModel
 import com.cristianwer.pepinillorick.ui.model.toUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,12 +19,12 @@ import javax.inject.Inject
 /**
  * UI state for the Character List screen.
  *
- * @property characters The list of characters to display.
+ * @property characters Stable wrapper for the list of characters.
  * @property isLoading Whether a network request is in progress.
  * @property error Error message if the request failed.
  */
 internal data class CharacterListUiState(
-    val characters: List<CharacterUiModel> = emptyList(),
+    val characters: CharacterListState = CharacterListState(),
     val isLoading: Boolean = false,
     val error: String? = null
 )
@@ -47,7 +48,9 @@ internal class CharacterListViewModel @Inject constructor(
         // Single observation of the local database to keep the UI in sync
         viewModelScope.launch {
             getCharactersUseCase().collect { characters ->
-                _uiState.update { it.copy(characters = characters.map { it.toUiModel() }) }
+                _uiState.update { 
+                    it.copy(characters = CharacterListState(items = characters.map { it.toUiModel() })) 
+                }
             }
         }
     }
