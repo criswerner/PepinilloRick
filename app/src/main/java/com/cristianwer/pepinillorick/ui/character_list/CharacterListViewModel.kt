@@ -44,11 +44,10 @@ internal class CharacterListViewModel @Inject constructor(
     val uiState: StateFlow<CharacterListUiState> = _uiState.asStateFlow()
 
     init {
-        // Observe characters from the local database
+        // Single observation of the local database to keep the UI in sync
         viewModelScope.launch {
             getCharactersUseCase().collect { characters ->
-                _uiState.update { character ->
-                    character.copy(characters = characters.map { it.toUiModel() }) }
+                _uiState.update { it.copy(characters = characters.map { it.toUiModel() }) }
             }
         }
     }
@@ -59,6 +58,7 @@ internal class CharacterListViewModel @Inject constructor(
     fun loadCharacters() {
         if (_uiState.value.isLoading) return
 
+        // Update state immediately to prevent race conditions from the UI
         _uiState.update { it.copy(isLoading = true, error = null) }
 
         viewModelScope.launch {

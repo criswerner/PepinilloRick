@@ -2,7 +2,7 @@ package com.cristianwer.pepinillorick.ui.character_list
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -23,90 +23,70 @@ import com.cristianwer.pepinillorick.ui.model.CharacterUiModel
 
 /**
  * Screen that displays the list of Rick & Morty characters.
+ *
+ * @param viewModel The ViewModel providing the UI state.
+ * @param onCharacterClick Callback invoked when a character is selected.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun CharacterListScreen(
     viewModel: CharacterListViewModel,
-    onCharacterClick: (Int) -> Unit,
-    onFavoritesClick: () -> Unit
+    onCharacterClick: (Int) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
 
-    // Initial load when the screen is first shown
-    LaunchedEffect(Unit) {
-        if (uiState.characters.isEmpty()) {
-            viewModel.loadCharacters()
-        }
-    }
-
-    // Detect when we reach the end of the list to load more
+    // Detect when we need more data: if the list is empty OR we scrolled near the end
     val shouldLoadMore = remember {
         derivedStateOf {
             val totalItems = listState.layoutInfo.totalItemsCount
             val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()
             
-            totalItems > 0 && lastVisibleItem != null && lastVisibleItem.index >= totalItems - 1
+            // Case 1: Initial load (list is empty)
+            // Case 2: Pagination (last item is visible)
+            totalItems == 0 || (lastVisibleItem != null && lastVisibleItem.index >= totalItems - 1)
         }
     }
 
+    // Single source of truth for triggers. 
+    // It re-evaluates if 'shouldLoadMore' becomes true OR if a previous loading finishes.
     LaunchedEffect(shouldLoadMore.value, uiState.isLoading) {
         if (shouldLoadMore.value && !uiState.isLoading) {
             viewModel.loadCharacters()
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(text = stringResource(id = R.string.character_list_title)) },
-                actions = {
-                    IconButton(onClick = onFavoritesClick) {
-                        Icon(
-                            imageVector = Icons.Default.Favorite,
-                            contentDescription = stringResource(id = R.string.character_list_go_to_favorites)
-                        )
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(
-                    items = uiState.characters,
-                    key = { it.id }
-                ) { character ->
-                    CharacterItem(
-                        character = character,
-                        onClick = { onCharacterClick(character.id) },
-                        onFavoriteClick = { viewModel.toggleFavorite(character.id, !character.isFavorite) }
+            itemsIndexed(
+                items = uiState.characters,
+                key = { _, character -> character.id }
+            ) { _, character ->
+                CharacterItem(
+                    character = character,
+                    onClick = { onCharacterClick(character.id) },
+                    onFavoriteClick = { viewModel.toggleFavorite(character.id, !character.isFavorite) }
+                )
+            }
+
+            if (uiState.isLoading) {
+                item {
+                    LoadingIndicator(modifier = Modifier.fillMaxWidth())
+                }
+            }
+
+            if (uiState.error != null) {
+                item {
+                    ErrorRetryItem(
+                        message = stringResource(id = R.string.character_list_error),
+                        onRetry = { viewModel.loadCharacters() }
                     )
-                }
-
-                if (uiState.isLoading) {
-                    item {
-                        LoadingIndicator(modifier = Modifier.fillMaxWidth())
-                    }
-                }
-
-                if (uiState.error != null) {
-                    item {
-                        ErrorRetryItem(
-                            message = stringResource(id = R.string.character_list_error),
-                            onRetry = { viewModel.loadCharacters() }
-                        )
-                    }
                 }
             }
         }

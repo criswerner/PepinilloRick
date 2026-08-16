@@ -4,9 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -24,36 +22,23 @@ import com.cristianwer.pepinillorick.ui.model.CharacterUiModel
 
 /**
  * Screen that displays the list of favorite Rick & Morty characters.
+ *
+ * @param viewModel The ViewModel providing the UI state.
+ * @param onCharacterClick Callback invoked when a character is selected.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun FavoriteListScreen(
     viewModel: FavoriteListViewModel,
-    onCharacterClick: (Int) -> Unit,
-    onBackClick: () -> Unit
+    onCharacterClick: (Int) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(text = stringResource(id = R.string.favorite_list_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
         if (uiState.favorites.isEmpty()) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
+                modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -63,9 +48,7 @@ internal fun FavoriteListScreen(
             }
         } else {
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
+                modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
