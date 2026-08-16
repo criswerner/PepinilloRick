@@ -4,14 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -21,10 +17,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import com.cristianwer.pepinillorick.ui.character_detail.CharacterDetailScreen
 import com.cristianwer.pepinillorick.ui.character_list.CharacterListScreen
@@ -34,7 +27,7 @@ import com.cristianwer.pepinillorick.ui.theme.PepinilloRickTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
- * Main activity of the application, serving as the single activity for all screens.
+ * Main activity of the application.
  */
 @AndroidEntryPoint
 internal class MainActivity : ComponentActivity() {
@@ -49,9 +42,6 @@ internal class MainActivity : ComponentActivity() {
     }
 }
 
-/**
- * Main Composable that sets up the Scaffold with Bottom Navigation.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun RickAndMortyApp() {
@@ -66,24 +56,25 @@ private fun RickAndMortyApp() {
         )
     }
 
-    // Stabilize initial state: Default to showing bars and the first item's title
-    // while the navController is initializing (currentDestination == null).
     val currentBottomNavItem = items.find { it.route == currentDestination?.route }
-    val showBottomBar = currentDestination == null || currentBottomNavItem != null
-    val currentTitleRes = currentBottomNavItem?.titleRes ?: BottomNavItem.Characters.titleRes
+    val showBars = currentDestination == null || currentBottomNavItem != null
+    val currentTitleRes = currentBottomNavItem?.titleRes ?: R.string.character_list_title
+
+    // Stable navigation lambda
+    val onCharacterClick = remember(navController) {
+        { id: Int -> navController.navigate("character_detail/$id") }
+    }
 
     Scaffold(
         topBar = {
-            if (showBottomBar) {
+            if (showBars) {
                 TopAppBar(
-                    title = {
-                        Text(text = stringResource(id = currentTitleRes))
-                    }
+                    title = { Text(text = stringResource(id = currentTitleRes)) }
                 )
             }
         },
         bottomBar = {
-            if (showBottomBar) {
+            if (showBars) {
                 NavigationBar {
                     items.forEach { item ->
                         val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
@@ -108,39 +99,34 @@ private fun RickAndMortyApp() {
             }
         }
     ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = BottomNavItem.Characters.route,
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            composable(BottomNavItem.Characters.route) {
-                CharacterListScreen(
-                    viewModel = hiltViewModel(),
-                    onCharacterClick = { characterId ->
-                        navController.navigate("character_detail/$characterId")
-                    }
-                )
-            }
-            composable(BottomNavItem.Favorites.route) {
-                FavoriteListScreen(
-                    viewModel = hiltViewModel(),
-                    onCharacterClick = { characterId ->
-                        navController.navigate("character_detail/$characterId")
-                    }
-                )
-            }
-            composable(
-                route = "character_detail/{characterId}",
-                arguments = listOf(
-                    navArgument("characterId") { type = NavType.IntType }
-                )
+        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+            NavHost(
+                navController = navController,
+                startDestination = BottomNavItem.Characters.route
             ) {
-                CharacterDetailScreen(
-                    viewModel = hiltViewModel(),
-                    onBackClick = {
-                        navController.popBackStack()
-                    }
-                )
+                composable(BottomNavItem.Characters.route) {
+                    CharacterListScreen(
+                        viewModel = hiltViewModel(),
+                        onCharacterClick = onCharacterClick
+                    )
+                }
+                composable(BottomNavItem.Favorites.route) {
+                    FavoriteListScreen(
+                        viewModel = hiltViewModel(),
+                        onCharacterClick = onCharacterClick
+                    )
+                }
+                composable(
+                    route = "character_detail/{characterId}",
+                    arguments = listOf(
+                        navArgument("characterId") { type = NavType.IntType }
+                    )
+                ) {
+                    CharacterDetailScreen(
+                        viewModel = hiltViewModel(),
+                        onBackClick = { navController.popBackStack() }
+                    )
+                }
             }
         }
     }
