@@ -3,6 +3,7 @@ package com.cristianwer.pepinillorick.di
 import android.content.Context
 import androidx.room.Room
 import com.cristianwer.pepinillorick.data.local.dao.CharacterDao
+import com.cristianwer.pepinillorick.data.local.dao.FavoriteDao
 import com.cristianwer.pepinillorick.data.local.dao.RemoteKeysDao
 import com.cristianwer.pepinillorick.data.local.database.RickAndMortyDatabase
 import dagger.Module
@@ -38,5 +39,11 @@ internal object DatabaseModule {
     @Singleton
     fun provideRemoteKeysDao(database: RickAndMortyDatabase): RemoteKeysDao {
         return database.remoteKeysDao
+    }
+
+    @Provides
+    @Singleton
+    fun provideFavoriteDao(database: RickAndMortyDatabase): FavoriteDao {
+        return database.favoriteDao
     }
 }

@@ -13,7 +13,8 @@ internal data class CharacterUiModel(
     val status: String,
     val species: String,
     val imageUrl: String,
-    val locationName: String
+    val locationName: String,
+    val isFavorite: Boolean
 )
 
 /**
@@ -26,7 +27,8 @@ internal fun Character.toUiModel(): CharacterUiModel {
         status = status.value,
         species = species,
         imageUrl = imageUrl,
-        locationName = location.name
+        locationName = location.name,
+        isFavorite = isFavorite
     )
 }
 

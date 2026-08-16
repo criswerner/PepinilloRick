@@ -29,4 +29,12 @@ internal interface CharacterRepository {
      * @return Result indicating success or failure.
      */
     suspend fun syncCharacters(forceRefresh: Boolean = false): Result<Unit>
+
+    /**
+     * Toggles the favorite status of a character.
+     *
+     * @param id The unique identifier of the character.
+     * @param isFavorite The new favorite status.
+     */
+    suspend fun toggleFavorite(id: Int, isFavorite: Boolean)
 }

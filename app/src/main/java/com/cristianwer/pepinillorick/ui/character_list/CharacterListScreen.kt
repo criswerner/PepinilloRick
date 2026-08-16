@@ -4,10 +4,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -29,6 +33,7 @@ internal fun CharacterListScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
 
+    // Initial load when the screen is first shown
     LaunchedEffect(Unit) {
         if (uiState.characters.isEmpty()) {
             viewModel.loadCharacters()
@@ -75,7 +80,8 @@ internal fun CharacterListScreen(
                 ) { character ->
                     CharacterItem(
                         character = character,
-                        onClick = { onCharacterClick(character.id) }
+                        onClick = { onCharacterClick(character.id) },
+                        onFavoriteClick = { viewModel.toggleFavorite(character.id, !character.isFavorite) }
                     )
                 }
 
@@ -104,7 +110,8 @@ internal fun CharacterListScreen(
 @Composable
 private fun CharacterItem(
     character: CharacterUiModel,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onFavoriteClick: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -125,7 +132,7 @@ private fun CharacterItem(
                 contentScale = ContentScale.Crop
             )
             Spacer(modifier = Modifier.width(16.dp))
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = character.name,
                     style = MaterialTheme.typography.titleLarge,
@@ -143,6 +150,17 @@ private fun CharacterItem(
                 Text(
                     text = character.locationName,
                     style = MaterialTheme.typography.bodySmall
+                )
+            }
+            IconButton(onClick = onFavoriteClick) {
+                Icon(
+                    imageVector = if (character.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = if (character.isFavorite) {
+                        stringResource(id = R.string.character_list_favorite)
+                    } else {
+                        stringResource(id = R.string.character_list_not_favorite)
+                    },
+                    tint = if (character.isFavorite) Color.Red else LocalContentColor.current
                 )
             }
         }
