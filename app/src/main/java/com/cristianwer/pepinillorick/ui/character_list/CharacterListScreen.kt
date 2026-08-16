@@ -43,7 +43,7 @@ internal fun CharacterListScreen(
     }
 
     LaunchedEffect(shouldLoadMore.value, uiState.isLoading) {
-        if (shouldLoadMore.value && !uiState.isLoading && !uiState.isLastPage) {
+        if (shouldLoadMore.value && !uiState.isLoading) {
             viewModel.loadCharacters()
         }
     }

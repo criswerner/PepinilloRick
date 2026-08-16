@@ -21,10 +21,12 @@ internal interface CharacterRepository {
     suspend fun getCharacterById(id: Int): Character?
 
     /**
-     * Synchronizes a specific page of characters from the network to the local database.
+     * Synchronizes characters from the network to the local database.
+     * 
+     * It automatically determines the next page to fetch based on local state.
      *
-     * @param page The page number to fetch.
+     * @param forceRefresh If true, it clears the local database and starts from page 1.
      * @return Result indicating success or failure.
      */
-    suspend fun syncCharacters(page: Int): Result<Unit>
+    suspend fun syncCharacters(forceRefresh: Boolean = false): Result<Unit>
 }

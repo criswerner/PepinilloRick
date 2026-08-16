@@ -32,7 +32,6 @@ internal class CharacterListViewModelTest {
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         every { getCharactersUseCase() } returns flowOf(emptyList())
-        // We return a failure by default to avoid the automatic increment in init during setup
         coEvery { syncCharactersUseCase(any()) } returns Result.failure(Exception("Setup"))
         
         viewModel = CharacterListViewModel(getCharactersUseCase, syncCharactersUseCase)
@@ -50,20 +49,18 @@ internal class CharacterListViewModelTest {
 
         // Then
         assertEquals(false, state.isLoading)
-        assertEquals(1, state.currentPage)
     }
 
     @Test
-    fun `loadCharacters should increment page on success`() = runTest {
+    fun `loadCharacters should update loading state on success`() = runTest {
         // Given
-        coEvery { syncCharactersUseCase(any()) } returns Result.success(Unit)
+        coEvery { syncCharactersUseCase() } returns Result.success(Unit)
 
         // When
         viewModel.loadCharacters()
 
         // Then
         val state = viewModel.uiState.value
-        assertEquals(2, state.currentPage)
         assertEquals(false, state.isLoading)
     }
 }

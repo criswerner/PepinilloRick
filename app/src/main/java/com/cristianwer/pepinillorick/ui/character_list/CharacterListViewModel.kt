@@ -19,16 +19,19 @@ import javax.inject.Inject
 
 /**
  * UI state for the Character List screen.
+ *
+ * @property isLoading Whether a network request is in progress.
+ * @property error Error message if the request failed.
  */
 internal data class CharacterListUiState(
     val isLoading: Boolean = false,
-    val error: String? = null,
-    val currentPage: Int = 1,
-    val isLastPage: Boolean = false
+    val error: String? = null
 )
 
 /**
- * ViewModel for the Character List screen managing manual pagination and state.
+ * ViewModel for the Character List screen.
+ * 
+ * It coordinates data retrieval from the domain layer and manages pagination triggers.
  */
 @HiltViewModel
 internal class CharacterListViewModel @Inject constructor(
@@ -39,6 +42,9 @@ internal class CharacterListViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(CharacterListUiState())
     val uiState: StateFlow<CharacterListUiState> = _uiState.asStateFlow()
 
+    /**
+     * List of characters observed from the local database.
+     */
     val characters: StateFlow<List<CharacterUiModel>> = getCharactersUseCase()
         .map { list -> list.map { it.toUiModel() } }
         .stateIn(
@@ -52,22 +58,37 @@ internal class CharacterListViewModel @Inject constructor(
     }
 
     /**
-     * Loads the next page of characters.
+     * Triggers a request for the next page of characters.
+     * The repository handles the current pagination state.
      */
     fun loadCharacters() {
-        if (_uiState.value.isLoading || _uiState.value.isLastPage) return
+        if (_uiState.value.isLoading) return
 
         _uiState.update { it.copy(isLoading = true, error = null) }
 
         viewModelScope.launch {
-            syncCharactersUseCase(_uiState.value.currentPage)
+            syncCharactersUseCase()
                 .onSuccess {
-                    _uiState.update { state ->
-                        state.copy(
-                            isLoading = false,
-                            currentPage = state.currentPage + 1
-                        )
-                    }
+                    _uiState.update { it.copy(isLoading = false) }
+                }
+                .onFailure { error ->
+                    _uiState.update { it.copy(isLoading = false, error = error.message) }
+                }
+        }
+    }
+    
+    /**
+     * Refreshes the entire list from the first page.
+     */
+    fun refresh() {
+        if (_uiState.value.isLoading) return
+        
+        _uiState.update { it.copy(isLoading = true, error = null) }
+        
+        viewModelScope.launch {
+            syncCharactersUseCase(forceRefresh = true)
+                .onSuccess {
+                    _uiState.update { it.copy(isLoading = false) }
                 }
                 .onFailure { error ->
                     _uiState.update { it.copy(isLoading = false, error = error.message) }

@@ -9,7 +9,7 @@ import com.cristianwer.pepinillorick.data.local.entity.RemoteKeysEntity
 
 @Database(
     entities = [CharacterEntity::class, RemoteKeysEntity::class],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 internal abstract class RickAndMortyDatabase : RoomDatabase() {

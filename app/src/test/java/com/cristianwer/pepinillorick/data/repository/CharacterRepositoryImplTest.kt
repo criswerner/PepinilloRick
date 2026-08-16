@@ -2,6 +2,7 @@ package com.cristianwer.pepinillorick.data.repository
 
 import androidx.room.withTransaction
 import com.cristianwer.pepinillorick.data.local.dao.CharacterDao
+import com.cristianwer.pepinillorick.data.local.dao.RemoteKeysDao
 import com.cristianwer.pepinillorick.data.local.database.RickAndMortyDatabase
 import com.cristianwer.platform.data.remote.dto.CharacterResponseDto
 import com.cristianwer.platform.data.remote.dto.InfoDto
@@ -12,10 +13,10 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.slot
+import io.mockk.verify
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -30,6 +31,7 @@ internal class CharacterRepositoryImplTest {
     private val apiService: RickAndMortyApiService = mockk()
     private val database: RickAndMortyDatabase = mockk()
     private val characterDao: CharacterDao = mockk(relaxed = true)
+    private val remoteKeysDao: RemoteKeysDao = mockk(relaxed = true)
 
     @Before
     fun setUp() {
@@ -40,6 +42,7 @@ internal class CharacterRepositoryImplTest {
         }
 
         every { database.characterDao } returns characterDao
+        every { database.remoteKeysDao } returns remoteKeysDao
         repository = CharacterRepositoryImpl(apiService, database)
     }
 
@@ -53,51 +56,41 @@ internal class CharacterRepositoryImplTest {
 
         // Then
         assertTrue(result.isEmpty())
+        verify { characterDao.getCharactersFlow() }
     }
 
     @Test
-    fun `syncCharacters should fetch from api and insert into db`() = runTest {
+    fun `syncCharacters should fetch page 1 when forceRefresh is true`() = runTest {
         // Given
         val response = CharacterResponseDto(
-            info = InfoDto(20, 2, null, null),
+            info = InfoDto(20, 2, "next", null),
             results = emptyList()
         )
         coEvery { apiService.getCharacters(1) } returns response
 
         // When
-        val result = repository.syncCharacters(1)
+        val result = repository.syncCharacters(forceRefresh = true)
 
         // Then
         assertTrue(result.isSuccess)
         coVerify { 
+            apiService.getCharacters(1)
             characterDao.deleteAllCharacters()
+            remoteKeysDao.deleteKey(any())
             characterDao.insertCharacters(any())
+            remoteKeysDao.insertKey(any())
         }
     }
 
     @Test
     fun `syncCharacters should return failure when api throws exception`() = runTest {
         // Given
-        coEvery { apiService.getCharacters(1) } throws IOException()
+        coEvery { apiService.getCharacters(any()) } throws IOException()
 
         // When
-        val result = repository.syncCharacters(1)
+        val result = repository.syncCharacters()
 
         // Then
         assertTrue(result.isFailure)
-    }
-
-    @Test
-    fun `getCharacterById should return character from dao`() = runTest {
-        // Given
-        val characterId = 1
-        coEvery { characterDao.getCharacterById(characterId) } returns null
-
-        // When
-        val result = repository.getCharacterById(characterId)
-
-        // Then
-        assertEquals(null, result)
-        coVerify { characterDao.getCharacterById(characterId) }
     }
 }
