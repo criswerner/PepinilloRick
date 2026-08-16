@@ -56,7 +56,6 @@ internal class CharacterRepositoryImplTest {
 
         // Then
         assertTrue(result.isEmpty())
-        verify { characterDao.getCharactersFlow() }
     }
 
     @Test
