@@ -13,6 +13,11 @@ internal interface CharacterRepository {
     fun getCharacters(): Flow<List<Character>>
 
     /**
+     * Retrieves a stream of characters marked as favorites.
+     */
+    fun getFavoriteCharacters(): Flow<List<Character>>
+
+    /**
      * Retrieves a specific character by their unique identifier.
      *
      * @param id The unique identifier of the character.

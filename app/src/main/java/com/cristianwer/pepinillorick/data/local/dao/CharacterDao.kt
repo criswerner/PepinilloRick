@@ -19,6 +19,9 @@ internal interface CharacterDao {
     @Query("SELECT * FROM characters WHERE id = :id")
     fun getCharacterByIdFlow(id: Int): Flow<CharacterEntity?>
 
+    @Query("SELECT characters.* FROM characters INNER JOIN favorites ON characters.id = favorites.characterId")
+    fun getFavoriteCharactersFlow(): Flow<List<CharacterEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCharacters(characters: List<CharacterEntity>)
 

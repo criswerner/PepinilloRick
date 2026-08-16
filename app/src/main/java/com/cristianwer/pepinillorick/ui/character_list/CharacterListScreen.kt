@@ -28,7 +28,8 @@ import com.cristianwer.pepinillorick.ui.model.CharacterUiModel
 @Composable
 internal fun CharacterListScreen(
     viewModel: CharacterListViewModel,
-    onCharacterClick: (Int) -> Unit
+    onCharacterClick: (Int) -> Unit,
+    onFavoritesClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
@@ -59,7 +60,15 @@ internal fun CharacterListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = stringResource(id = R.string.character_list_title)) }
+                title = { Text(text = stringResource(id = R.string.character_list_title)) },
+                actions = {
+                    IconButton(onClick = onFavoritesClick) {
+                        Icon(
+                            imageVector = Icons.Default.Favorite,
+                            contentDescription = stringResource(id = R.string.character_list_go_to_favorites)
+                        )
+                    }
+                }
             )
         }
     ) { paddingValues ->

@@ -39,6 +39,12 @@ internal class CharacterRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun getFavoriteCharacters(): Flow<List<Character>> {
+        return database.characterDao.getFavoriteCharactersFlow().map { entities ->
+            entities.map { it.toDomain().copy(isFavorite = true) }
+        }
+    }
+
     override suspend fun getCharacterById(id: Int): Character? {
         val character = database.characterDao.getCharacterById(id)?.toDomain()
         return character?.let {
