@@ -21,6 +21,14 @@ internal interface CharacterRepository {
     suspend fun getCharacterById(id: Int): Character?
 
     /**
+     * Retrieves a specific character as a stream by their unique identifier.
+     *
+     * @param id The unique identifier of the character.
+     * @return A [Flow] emitting the character if found, null otherwise.
+     */
+    fun getCharacterByIdFlow(id: Int): Flow<Character?>
+
+    /**
      * Synchronizes characters from the network to the local database.
      * 
      * It automatically determines the next page to fetch based on local state.

@@ -47,6 +47,15 @@ internal class CharacterRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun getCharacterByIdFlow(id: Int): Flow<Character?> {
+        return combine(
+            database.characterDao.getCharacterByIdFlow(id),
+            database.favoriteDao.isFavoriteFlow(id)
+        ) { entity, isFavorite ->
+            entity?.toDomain()?.copy(isFavorite = isFavorite)
+        }
+    }
+
     override suspend fun toggleFavorite(id: Int, isFavorite: Boolean) {
         if (isFavorite) {
             database.favoriteDao.insertFavorite(FavoriteEntity(id))

@@ -45,7 +45,8 @@ internal data class CharacterDetailUiModel(
     val originName: String,
     val locationName: String,
     val imageUrl: String,
-    val episodeCount: Int
+    val episodeCount: Int,
+    val isFavorite: Boolean
 )
 
 /**
@@ -61,6 +62,7 @@ internal fun Character.toDetailUiModel(): CharacterDetailUiModel {
         originName = origin.name,
         locationName = location.name,
         imageUrl = imageUrl,
-        episodeCount = episodes.size
+        episodeCount = episodes.size,
+        isFavorite = isFavorite
     )
 }
