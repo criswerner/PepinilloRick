@@ -7,10 +7,10 @@ import com.cristianwer.pepinillorick.domain.usecase.ToggleFavoriteUseCase
 import com.cristianwer.pepinillorick.ui.model.CharacterUiModel
 import com.cristianwer.pepinillorick.ui.model.toUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -25,23 +25,26 @@ internal data class FavoriteListUiState(
 
 /**
  * ViewModel for the Favorite List screen.
+ * 
+ * It manages the reactive observation of favorite characters from the domain layer.
  */
 @HiltViewModel
 internal class FavoriteListViewModel @Inject constructor(
-    getFavoriteCharactersUseCase: GetFavoriteCharactersUseCase,
+    private val getFavoriteCharactersUseCase: GetFavoriteCharactersUseCase,
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase
 ) : ViewModel() {
 
-    /**
-     * UI state observed by the screen.
-     */
-    val uiState: StateFlow<FavoriteListUiState> = getFavoriteCharactersUseCase()
-        .map { list -> FavoriteListUiState(favorites = list.map { it.toUiModel() }) }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = FavoriteListUiState()
-        )
+    private val _uiState = MutableStateFlow(FavoriteListUiState())
+    val uiState: StateFlow<FavoriteListUiState> = _uiState.asStateFlow()
+
+    init {
+        // Observe favorite characters from the local database
+        viewModelScope.launch {
+            getFavoriteCharactersUseCase().collect { favorites ->
+                _uiState.update { it.copy(favorites = favorites.map { it.toUiModel() }) }
+            }
+        }
+    }
 
     /**
      * Toggles the favorite status of a character.

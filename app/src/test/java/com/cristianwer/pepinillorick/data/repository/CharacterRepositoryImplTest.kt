@@ -22,7 +22,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import java.io.IOException
 
 /**
  * Unit tests for [CharacterRepositoryImpl].
@@ -62,6 +61,23 @@ internal class CharacterRepositoryImplTest {
 
         // When
         val result = repository.getCharacters().first()
+
+        // Then
+        assertEquals(1, result.size)
+        assertTrue(result[0].isFavorite)
+    }
+
+    @Test
+    fun `getFavoriteCharacters should return characters from dao marked as favorite`() = runTest {
+        // Given
+        val characterId = 1
+        val entities = listOf(
+            CharacterEntity(characterId, "Rick", "Alive", "Human", "", "Male", "", "", "", "", "", "")
+        )
+        every { characterDao.getFavoriteCharactersFlow() } returns flowOf(entities)
+
+        // When
+        val result = repository.getFavoriteCharacters().first()
 
         // Then
         assertEquals(1, result.size)
