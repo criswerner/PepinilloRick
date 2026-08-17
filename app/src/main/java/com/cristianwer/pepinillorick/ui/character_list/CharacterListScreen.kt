@@ -49,18 +49,15 @@ internal fun CharacterListScreen(
         { viewModel.loadCharacters() }
     }
 
-    // High-level decision based on explicit states from ViewModel
+    val backgroundBrush = remember {
+        Brush.verticalGradient(
+            colors = listOf(SemiTransparentBlack, DeepSpace)
+        )
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        SemiTransparentBlack,
-                        DeepSpace
-                    )
-                )
-            )
+            .background(backgroundBrush)
     ) {
         when (val state = uiState) {
             is CharacterListUiState.InitialLoading -> {
@@ -70,7 +67,6 @@ internal fun CharacterListScreen(
                         color = RickGreen
                     )
                 }
-                // Disparo de carga inicial si estamos en este estado
                 LaunchedEffect(Unit) { viewModel.loadCharacters() }
             }
             
@@ -79,7 +75,6 @@ internal fun CharacterListScreen(
             }
             
             is CharacterListUiState.Success -> {
-                // Pagination trigger
                 val shouldLoadMore = remember {
                     derivedStateOf {
                         val totalItems = listState.layoutInfo.totalItemsCount
@@ -95,7 +90,7 @@ internal fun CharacterListScreen(
                 }
 
                 CharacterList(
-                    characterListState = state.characters,
+                    characters = state.characters,
                     onCharacterClick = onCharacterClick,
                     onFavoriteToggle = onFavoriteToggle,
                     listState = listState,

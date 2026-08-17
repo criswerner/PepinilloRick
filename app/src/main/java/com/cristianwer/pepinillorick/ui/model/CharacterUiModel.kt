@@ -4,14 +4,6 @@ import androidx.compose.runtime.Immutable
 import com.cristianwer.pepinillorick.domain.model.Character
 
 /**
- * Stable wrapper for the character list to prevent unnecessary recompositions.
- */
-@Immutable
-internal data class CharacterListState(
-    val items: List<CharacterUiModel> = emptyList()
-)
-
-/**
  * UI representation of a Rick & Morty character for the list screen.
  */
 @Immutable

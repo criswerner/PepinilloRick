@@ -11,14 +11,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.cristianwer.pepinillorick.R
-import com.cristianwer.pepinillorick.ui.model.CharacterListState
+import com.cristianwer.pepinillorick.ui.model.CharacterUiModel
 import com.cristianwer.pepinillorick.ui.theme.Dimens
+import kotlinx.collections.immutable.ImmutableList
 
 /**
  * A reusable list of Rick & Morty characters.
  * It focuses strictly on rendering the collection and pagination footers.
  *
- * @param characterListState Stable wrapper for the list of characters.
+ * @param characters Stable list of characters to display.
  * @param onCharacterClick Callback for item click.
  * @param onFavoriteToggle Callback for favorite toggle.
  * @param modifier Modifier for the list.
@@ -29,7 +30,7 @@ import com.cristianwer.pepinillorick.ui.theme.Dimens
  */
 @Composable
 internal fun CharacterList(
-    characterListState: CharacterListState,
+    characters: ImmutableList<CharacterUiModel>,
     onCharacterClick: (Int) -> Unit,
     onFavoriteToggle: (Int, Boolean) -> Unit,
     modifier: Modifier = Modifier,
@@ -45,7 +46,7 @@ internal fun CharacterList(
         verticalArrangement = Arrangement.spacedBy(Dimens.spacingMedium)
     ) {
         items(
-            items = characterListState.items,
+            items = characters,
             key = { it.id },
             contentType = { "character" }
         ) { character ->
@@ -56,7 +57,6 @@ internal fun CharacterList(
             )
         }
 
-        // Pagination footer states
         if (isPaginating) {
             item {
                 Box(
