@@ -1,12 +1,12 @@
 package com.cristianwer.pepinillorick.data.mapper
 
 import com.cristianwer.pepinillorick.data.local.entity.CharacterEntity
+import com.cristianwer.pepinillorick.data.remote.dto.CharacterDto
+import com.cristianwer.pepinillorick.data.remote.dto.LocationDto
 import com.cristianwer.pepinillorick.domain.model.Character
 import com.cristianwer.pepinillorick.domain.model.CharacterGender
 import com.cristianwer.pepinillorick.domain.model.CharacterStatus
 import com.cristianwer.pepinillorick.domain.model.Location
-import com.cristianwer.platform.data.remote.dto.CharacterDto
-import com.cristianwer.platform.data.remote.dto.LocationDto
 
 /**
  * Maps a [CharacterDto] from the data layer to a [Character] domain model.

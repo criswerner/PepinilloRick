@@ -1,4 +1,4 @@
-package com.cristianwer.platform.data.remote.dto
+package com.cristianwer.pepinillorick.data.remote.dto
 
 import com.google.gson.annotations.SerializedName
 

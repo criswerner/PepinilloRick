@@ -1,8 +1,8 @@
 package com.cristianwer.pepinillorick.di
 
 import android.content.Context
+import com.cristianwer.pepinillorick.data.remote.RickAndMortyApiService
 import com.cristianwer.platform.network.provider.NetworkClient
-import com.cristianwer.platform.network.service.RickAndMortyApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
