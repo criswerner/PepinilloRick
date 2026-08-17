@@ -90,7 +90,7 @@ internal fun CharacterListScreen(
                 }
 
                 CharacterList(
-                    characterListState = state.characters,
+                    characters = state.characters,
                     onCharacterClick = onCharacterClick,
                     onFavoriteToggle = onFavoriteToggle,
                     listState = listState,

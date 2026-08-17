@@ -62,7 +62,7 @@ internal fun FavoriteListScreen(
 
             is FavoriteListUiState.Success -> {
                 CharacterList(
-                    characterListState = state.favorites,
+                    characters = state.favorites,
                     onCharacterClick = onCharacterClick,
                     onFavoriteToggle = { id, _ -> viewModel.toggleFavorite(id, false) }
                 )

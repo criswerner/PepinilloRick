@@ -2,16 +2,6 @@ package com.cristianwer.pepinillorick.ui.model
 
 import androidx.compose.runtime.Immutable
 import com.cristianwer.pepinillorick.domain.model.Character
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
-
-/**
- * Stable wrapper for the character list to prevent unnecessary recompositions.
- */
-@Immutable
-internal data class CharacterListState(
-    val items: ImmutableList<CharacterUiModel> = persistentListOf()
-)
 
 /**
  * UI representation of a Rick & Morty character for the list screen.

@@ -14,7 +14,6 @@ import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -83,8 +82,8 @@ internal class CharacterListViewModelTest {
 
         assertTrue(state is CharacterListUiState.Success)
         val successState = state as CharacterListUiState.Success
-        assertEquals(1, successState.characters.items.size)
-        assertEquals(sampleCharacter.name, successState.characters.items[0].name)
+        assertEquals(1, successState.characters.size)
+        assertEquals(sampleCharacter.name, successState.characters[0].name)
     }
 
     @Test
@@ -102,7 +101,7 @@ internal class CharacterListViewModelTest {
         viewModel.loadCharacters()
 
         // Then
-        coVerify(atLeast = 1) { getCharactersUseCase(any()) }
+        coVerify(exactly = 2) { getCharactersUseCase(any()) }
         
         job.cancel()
     }

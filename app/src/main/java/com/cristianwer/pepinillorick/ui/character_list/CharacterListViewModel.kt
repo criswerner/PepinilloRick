@@ -5,9 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.cristianwer.pepinillorick.domain.model.Resource
 import com.cristianwer.pepinillorick.domain.usecase.GetCharactersUseCase
 import com.cristianwer.pepinillorick.domain.usecase.ToggleFavoriteUseCase
-import com.cristianwer.pepinillorick.ui.model.CharacterListState
+import com.cristianwer.pepinillorick.ui.model.CharacterUiModel
 import com.cristianwer.pepinillorick.ui.model.toUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +30,7 @@ internal sealed interface CharacterListUiState {
     data object InitialLoading : CharacterListUiState
     data class InitialError(val message: String) : CharacterListUiState
     data class Success(
-        val characters: CharacterListState,
+        val characters: ImmutableList<CharacterUiModel>,
         val isPaginating: Boolean = false,
         val paginationError: String? = null
     ) : CharacterListUiState
@@ -61,25 +62,24 @@ internal class CharacterListViewModel @Inject constructor(
         }
         .map { resource ->
             val characters = resource.data?.map { it.toUiModel() }?.toImmutableList() ?: persistentListOf()
-            val listState = CharacterListState(items = characters)
 
             when (resource) {
                 is Resource.Loading -> {
                     if (characters.isEmpty()) {
                         CharacterListUiState.InitialLoading
                     } else {
-                        CharacterListUiState.Success(listState, isPaginating = true)
+                        CharacterListUiState.Success(characters, isPaginating = true)
                     }
                 }
                 is Resource.Success -> {
-                    CharacterListUiState.Success(listState)
+                    CharacterListUiState.Success(characters)
                 }
                 is Resource.Error -> {
                     if (characters.isEmpty()) {
                         CharacterListUiState.InitialError(resource.message ?: "Unknown Error")
                     } else {
                         CharacterListUiState.Success(
-                            characters = listState,
+                            characters = characters,
                             paginationError = resource.message
                         )
                     }
