@@ -24,6 +24,10 @@ internal fun CharacterListScreen(
         { id, isFavorite -> viewModel.toggleFavorite(id, isFavorite) }
     }
 
+    val onRetry = remember(viewModel) {
+        { viewModel.loadCharacters() }
+    }
+
     // High-level decision based on explicit states from ViewModel
     Box(modifier = Modifier.fillMaxSize()) {
         when (val state = uiState) {
@@ -36,7 +40,7 @@ internal fun CharacterListScreen(
             }
             
             is CharacterListUiState.InitialError -> {
-                FullScreenError(onRetry = viewModel::loadCharacters)
+                FullScreenError(onRetry = onRetry)
             }
             
             is CharacterListUiState.Success -> {
@@ -56,13 +60,13 @@ internal fun CharacterListScreen(
                 }
 
                 CharacterList(
-                    characters = state.characters.items,
+                    characterListState = state.characters,
                     onCharacterClick = onCharacterClick,
                     onFavoriteToggle = onFavoriteToggle,
                     listState = listState,
                     isPaginating = state.isPaginating,
                     paginationError = state.paginationError,
-                    onRetry = viewModel::loadCharacters
+                    onRetry = onRetry
                 )
             }
         }
