@@ -105,7 +105,7 @@ private fun RickAndMortyApp() {
     ) { innerPadding ->
         // When not showing activity bars, we provide 0 padding to the content 
         // so the detail screen can use the full screen area correctly.
-        val contentPadding = if (showActivityBars) innerPadding else PaddingValues(0.dp)
+        val contentPadding = if (showActivityBars) innerPadding else PaddingValues(all = 0.dp)
         
         Box(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
             NavHost(

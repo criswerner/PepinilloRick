@@ -1,16 +1,22 @@
 package com.cristianwer.pepinillorick.ui.character_list
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cristianwer.pepinillorick.R
 import com.cristianwer.pepinillorick.ui.components.CharacterList
+import com.cristianwer.pepinillorick.ui.theme.DeepSpace
 import com.cristianwer.pepinillorick.ui.theme.Dimens
+import com.cristianwer.pepinillorick.ui.theme.RickGreen
 
 @Composable
 internal fun CharacterListScreen(
@@ -29,11 +35,25 @@ internal fun CharacterListScreen(
     }
 
     // High-level decision based on explicit states from ViewModel
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color.Black.copy(alpha = 0.8f),
+                        DeepSpace
+                    )
+                )
+            )
+    ) {
         when (val state = uiState) {
             is CharacterListUiState.InitialLoading -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(modifier = Modifier.size(Dimens.loadingIndicatorSize))
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(Dimens.loadingIndicatorSize),
+                        color = RickGreen
+                    )
                 }
                 // Disparo de carga inicial si estamos en este estado
                 LaunchedEffect(Unit) { viewModel.loadCharacters() }
@@ -85,11 +105,15 @@ private fun FullScreenError(onRetry: () -> Unit) {
         Text(
             text = stringResource(id = R.string.character_list_error),
             color = MaterialTheme.colorScheme.error,
-            style = MaterialTheme.typography.bodyLarge
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(Dimens.spacingMedium))
-        Button(onClick = onRetry) {
-            Text(text = stringResource(id = R.string.character_list_retry))
+        Button(
+            onClick = onRetry,
+            colors = ButtonDefaults.buttonColors(containerColor = RickGreen)
+        ) {
+            Text(text = stringResource(id = R.string.character_list_retry), color = DeepSpace)
         }
     }
 }
