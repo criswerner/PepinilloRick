@@ -8,10 +8,13 @@ import com.cristianwer.pepinillorick.data.mapper.toDomain
 import com.cristianwer.pepinillorick.data.mapper.toEntity
 import com.cristianwer.pepinillorick.data.remote.RickAndMortyApiService
 import com.cristianwer.pepinillorick.domain.model.Character
+import com.cristianwer.pepinillorick.domain.model.Resource
 import com.cristianwer.pepinillorick.domain.repository.CharacterRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -36,6 +39,41 @@ internal class CharacterRepositoryImpl @Inject constructor(
             database.favoriteDao.getAllFavoriteIdsFlow()
         ) { entities, favoriteIds ->
             entities.map { it.toDomain().copy(isFavorite = favoriteIds.contains(it.id)) }
+        }
+    }
+
+    override fun getCharactersWithSync(forceRefresh: Boolean): Flow<Resource<List<Character>>> = flow {
+        val localDbFlow = getCharacters()
+        val cachedData = localDbFlow.first()
+
+        emit(Resource.Loading(cachedData))
+
+        try {
+            val pageToLoad = if (forceRefresh) {
+                1
+            } else {
+                database.remoteKeysDao.getRemoteKey(CHARACTER_REMOTE_KEY_LABEL)?.nextPage ?: 1
+            }
+
+            val response = apiService.getCharacters(pageToLoad)
+            val entities = response.results.map { it.toEntity() }
+            val isLastPage = response.info.next == null
+            val nextPage = if (isLastPage) pageToLoad else pageToLoad + 1
+
+            database.withTransaction {
+                if (forceRefresh) {
+                    database.characterDao.deleteAllCharacters()
+                    database.remoteKeysDao.deleteKey(CHARACTER_REMOTE_KEY_LABEL)
+                }
+
+                database.characterDao.insertCharacters(entities)
+                database.remoteKeysDao.insertKey(
+                    RemoteKeysEntity(CHARACTER_REMOTE_KEY_LABEL, nextPage)
+                )
+            }
+            emitAll(localDbFlow.map { Resource.Success(it) })
+        } catch (e: Exception) {
+            emitAll(localDbFlow.map { Resource.Error(e.message ?: "Unknown error", it) })
         }
     }
 

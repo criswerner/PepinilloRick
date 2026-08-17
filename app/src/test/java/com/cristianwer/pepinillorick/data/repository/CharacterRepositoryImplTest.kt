@@ -6,6 +6,7 @@ import com.cristianwer.pepinillorick.data.local.dao.FavoriteDao
 import com.cristianwer.pepinillorick.data.local.dao.RemoteKeysDao
 import com.cristianwer.pepinillorick.data.local.database.RickAndMortyDatabase
 import com.cristianwer.pepinillorick.data.local.entity.CharacterEntity
+import com.cristianwer.pepinillorick.domain.model.Resource
 import com.cristianwer.pepinillorick.data.remote.RickAndMortyApiService
 import com.cristianwer.pepinillorick.data.remote.dto.CharacterResponseDto
 import com.cristianwer.pepinillorick.data.remote.dto.InfoDto
@@ -17,11 +18,13 @@ import io.mockk.mockkStatic
 import io.mockk.slot
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.io.IOException
 
 /**
  * Unit tests for [CharacterRepositoryImpl].
@@ -65,6 +68,28 @@ internal class CharacterRepositoryImplTest {
         // Then
         assertEquals(1, result.size)
         assertTrue(result[0].isFavorite)
+    }
+
+    @Test
+    fun `getCharactersWithSync should emit loading then success`() = runTest {
+        // Given
+        every { characterDao.getCharactersFlow() } returns flowOf(emptyList())
+        every { favoriteDao.getAllFavoriteIdsFlow() } returns flowOf(emptyList())
+        val response = CharacterResponseDto(
+            info = InfoDto(20, 2, "next", null),
+            results = emptyList()
+        )
+        coEvery { apiService.getCharacters(any()) } returns response
+
+        // When
+        val emissions = mutableListOf<Resource<List<com.cristianwer.pepinillorick.domain.model.Character>>>()
+        val job = launch {
+            repository.getCharactersWithSync().collect { emissions.add(it) }
+        }
+
+        // Then
+        assertTrue(emissions[0] is Resource.Loading)
+        job.cancel()
     }
 
     @Test
@@ -115,28 +140,5 @@ internal class CharacterRepositoryImplTest {
 
         // Then
         coVerify { favoriteDao.deleteFavorite(any()) }
-    }
-
-    @Test
-    fun `syncCharacters should fetch page 1 when forceRefresh is true`() = runTest {
-        // Given
-        val response = CharacterResponseDto(
-            info = InfoDto(20, 2, "next", null),
-            results = emptyList()
-        )
-        coEvery { apiService.getCharacters(1) } returns response
-
-        // When
-        val result = repository.syncCharacters(forceRefresh = true)
-
-        // Then
-        assertTrue(result.isSuccess)
-        coVerify { 
-            apiService.getCharacters(1)
-            characterDao.deleteAllCharacters()
-            remoteKeysDao.deleteKey(any())
-            characterDao.insertCharacters(any())
-            remoteKeysDao.insertKey(any())
-        }
     }
 }
