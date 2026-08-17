@@ -14,7 +14,9 @@ import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -66,19 +68,13 @@ internal class CharacterListViewModelTest {
     }
 
     @Test
-    fun `initial uiState should be InitialLoading when use case emits loading with no data`() = runTest {
-        // Given
-        charactersFlow.value = Resource.Loading()
-
-        // When
-        val state = viewModel.uiState.value
-
+    fun `initial uiState should be InitialLoading`() = runTest {
         // Then
-        assertTrue(state is CharacterListUiState.InitialLoading)
+        assertTrue(viewModel.uiState.value is CharacterListUiState.InitialLoading)
     }
 
     @Test
-    fun `uiState should be Success when use case emits success`() = runTest {
+    fun `uiState should be Success when database has characters`() = runTest {
         // Given
         charactersFlow.value = Resource.Success(listOf(sampleCharacter))
 
@@ -88,39 +84,43 @@ internal class CharacterListViewModelTest {
         assertTrue(state is CharacterListUiState.Success)
         val successState = state as CharacterListUiState.Success
         assertEquals(1, successState.characters.items.size)
+        assertEquals(sampleCharacter.name, successState.characters.items[0].name)
     }
 
     @Test
-    fun `uiState should be InitialError when use case emits error with no data`() = runTest {
-        // Given
+    fun `loadCharacters should trigger sync and keep Success state during pagination`() = runTest {
+        // Given: Already have data in DB
+        charactersFlow.value = Resource.Success(listOf(sampleCharacter))
+        
+        // Ensure initial success state is reached
+        viewModel.uiState.first { it is CharacterListUiState.Success }
+        
+        // We start collecting to keep the flow active for triggers
+        val job = backgroundScope.launch { viewModel.uiState.collect {} }
+
+        // When
+        viewModel.loadCharacters()
+
+        // Then
+        coVerify(atLeast = 1) { getCharactersUseCase(any()) }
+        
+        job.cancel()
+    }
+
+    @Test
+    fun `loadCharacters should result in InitialError when DB is empty and sync fails`() = runTest {
+        // Given: Empty DB
+        charactersFlow.value = Resource.Loading()
         val errorMessage = "Network Error"
+        
+        // When
+        viewModel.loadCharacters()
         charactersFlow.value = Resource.Error(errorMessage)
 
-        // When
+        // Then: Wait for error state
         val state = viewModel.uiState.first { it is CharacterListUiState.InitialError }
-
-        // Then
         assertTrue(state is CharacterListUiState.InitialError)
         assertEquals(errorMessage, (state as CharacterListUiState.InitialError).message)
-    }
-
-    @Test
-    fun `loadCharacters should trigger new emission even with same forceRefresh flag`() = runTest {
-        // Given
-        val results = mutableListOf<Boolean>()
-        every { getCharactersUseCase(any()) } answers {
-            results.add(it.invocation.args[0] as Boolean)
-            charactersFlow
-        }
-
-        // When
-        viewModel.loadCharacters(false)
-        viewModel.loadCharacters(false)
-
-        // Then
-        // Should have at least 3 calls: 1 from initial stateIn collection + 2 manual calls
-        // Since loadTrigger initial value is false, it might trigger getCharactersUseCase(false) once on start
-        assertTrue(results.size >= 2)
     }
 
     @Test

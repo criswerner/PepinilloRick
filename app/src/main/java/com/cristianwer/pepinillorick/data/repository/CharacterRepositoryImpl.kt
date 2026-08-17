@@ -11,12 +11,12 @@ import com.cristianwer.pepinillorick.domain.model.Character
 import com.cristianwer.pepinillorick.domain.model.Resource
 import com.cristianwer.pepinillorick.domain.repository.CharacterRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * Implementation of [CharacterRepository] using Room as a single source of truth.
@@ -34,11 +34,8 @@ internal class CharacterRepositoryImpl @Inject constructor(
     }
 
     override fun getCharacters(): Flow<List<Character>> {
-        return combine(
-            database.characterDao.getCharactersFlow(),
-            database.favoriteDao.getAllFavoriteIdsFlow()
-        ) { entities, favoriteIds ->
-            entities.map { it.toDomain().copy(isFavorite = favoriteIds.contains(it.id)) }
+        return database.characterDao.getCharactersWithFavoriteFlow().map { entities ->
+            entities.map { it.toDomain() }
         }
     }
 
@@ -73,6 +70,7 @@ internal class CharacterRepositoryImpl @Inject constructor(
             }
             emitAll(localDbFlow.map { Resource.Success(it) })
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             emitAll(localDbFlow.map { Resource.Error(e.message ?: "Unknown error", it) })
         }
     }
@@ -84,19 +82,12 @@ internal class CharacterRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getCharacterById(id: Int): Character? {
-        val character = database.characterDao.getCharacterById(id)?.toDomain()
-        return character?.let {
-            val isFavorite = database.favoriteDao.getAllFavoriteIdsFlow().map { it.contains(id) }.first()
-            it.copy(isFavorite = isFavorite)
-        }
+        return database.characterDao.getCharacterWithFavoriteById(id)?.toDomain()
     }
 
     override fun getCharacterByIdFlow(id: Int): Flow<Character?> {
-        return combine(
-            database.characterDao.getCharacterByIdFlow(id),
-            database.favoriteDao.isFavoriteFlow(id)
-        ) { entity, isFavorite ->
-            entity?.toDomain()?.copy(isFavorite = isFavorite)
+        return database.characterDao.getCharacterWithFavoriteByIdFlow(id).map { entity ->
+            entity?.toDomain()
         }
     }
 
@@ -105,36 +96,6 @@ internal class CharacterRepositoryImpl @Inject constructor(
             database.favoriteDao.insertFavorite(FavoriteEntity(id))
         } else {
             database.favoriteDao.deleteFavorite(FavoriteEntity(id))
-        }
-    }
-
-    override suspend fun syncCharacters(forceRefresh: Boolean): Result<Unit> {
-        return try {
-            val pageToLoad = if (forceRefresh) {
-                1
-            } else {
-                database.remoteKeysDao.getRemoteKey(CHARACTER_REMOTE_KEY_LABEL)?.nextPage ?: 1
-            }
-
-            val response = apiService.getCharacters(pageToLoad)
-            val entities = response.results.map { it.toEntity() }
-            val isLastPage = response.info.next == null
-            val nextPage = if (isLastPage) pageToLoad else pageToLoad + 1
-
-            database.withTransaction {
-                if (forceRefresh) {
-                    database.characterDao.deleteAllCharacters()
-                    database.remoteKeysDao.deleteKey(CHARACTER_REMOTE_KEY_LABEL)
-                }
-                
-                database.characterDao.insertCharacters(entities)
-                database.remoteKeysDao.insertKey(
-                    RemoteKeysEntity(CHARACTER_REMOTE_KEY_LABEL, nextPage)
-                )
-            }
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
         }
     }
 }

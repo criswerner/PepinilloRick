@@ -43,16 +43,6 @@ internal interface CharacterRepository {
     fun getCharacterByIdFlow(id: Int): Flow<Character?>
 
     /**
-     * Synchronizes characters from the network to the local database.
-     * 
-     * It automatically determines the next page to fetch based on local state.
-     *
-     * @param forceRefresh If true, it clears the local database and starts from page 1.
-     * @return Result indicating success or failure.
-     */
-    suspend fun syncCharacters(forceRefresh: Boolean = false): Result<Unit>
-
-    /**
      * Toggles the favorite status of a character.
      *
      * @param id The unique identifier of the character.
