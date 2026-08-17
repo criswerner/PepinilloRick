@@ -2,10 +2,12 @@ package com.cristianwer.pepinillorick.data.repository
 
 import androidx.room.withTransaction
 import com.cristianwer.pepinillorick.data.local.dao.CharacterDao
+import com.cristianwer.pepinillorick.data.local.dao.CharacterWithFavoriteEntity
 import com.cristianwer.pepinillorick.data.local.dao.FavoriteDao
 import com.cristianwer.pepinillorick.data.local.dao.RemoteKeysDao
 import com.cristianwer.pepinillorick.data.local.database.RickAndMortyDatabase
 import com.cristianwer.pepinillorick.data.local.entity.CharacterEntity
+import com.cristianwer.pepinillorick.domain.model.Resource
 import com.cristianwer.pepinillorick.data.remote.RickAndMortyApiService
 import com.cristianwer.pepinillorick.data.remote.dto.CharacterResponseDto
 import com.cristianwer.pepinillorick.data.remote.dto.InfoDto
@@ -17,11 +19,14 @@ import io.mockk.mockkStatic
 import io.mockk.slot
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.io.IOException
 
 /**
  * Unit tests for [CharacterRepositoryImpl].
@@ -54,10 +59,12 @@ internal class CharacterRepositoryImplTest {
         // Given
         val characterId = 1
         val entities = listOf(
-            CharacterEntity(characterId, "Rick", "Alive", "Human", "", "Male", "", "", "", "", "", "")
+            CharacterWithFavoriteEntity(
+                character = CharacterEntity(characterId, "Rick", "Alive", "Human", "", "Male", "", "", "", "", "", ""),
+                isFavorite = true
+            )
         )
-        every { characterDao.getCharactersFlow() } returns flowOf(entities)
-        every { favoriteDao.getAllFavoriteIdsFlow() } returns flowOf(listOf(characterId))
+        every { characterDao.getCharactersWithFavoriteFlow() } returns flowOf(entities)
 
         // When
         val result = repository.getCharacters().first()
@@ -65,6 +72,24 @@ internal class CharacterRepositoryImplTest {
         // Then
         assertEquals(1, result.size)
         assertTrue(result[0].isFavorite)
+    }
+
+    @Test
+    fun `getCharactersWithSync should emit loading then success`() = runTest {
+        // Given
+        every { characterDao.getCharactersWithFavoriteFlow() } returns flowOf(emptyList())
+        val response = CharacterResponseDto(
+            info = InfoDto(20, 2, "next", null),
+            results = emptyList()
+        )
+        coEvery { apiService.getCharacters(any()) } returns response
+
+        // When
+        val result = repository.getCharactersWithSync().take(2).toList()
+
+        // Then
+        assertTrue(result[0] is Resource.Loading)
+        assertTrue(result[1] is Resource.Success)
     }
 
     @Test
@@ -85,12 +110,32 @@ internal class CharacterRepositoryImplTest {
     }
 
     @Test
-    fun `getCharacterByIdFlow should emit character with favorite status`() = runTest {
+    fun `getCharacterById should return character with favorite status from dao`() = runTest {
         // Given
         val characterId = 1
-        val entity = CharacterEntity(characterId, "Rick", "Alive", "Human", "", "Male", "", "", "", "", "", "")
-        every { characterDao.getCharacterByIdFlow(characterId) } returns flowOf(entity)
-        every { favoriteDao.isFavoriteFlow(characterId) } returns flowOf(true)
+        val entity = CharacterWithFavoriteEntity(
+            character = CharacterEntity(characterId, "Rick", "Alive", "Human", "", "Male", "", "", "", "", "", ""),
+            isFavorite = true
+        )
+        coEvery { characterDao.getCharacterWithFavoriteById(characterId) } returns entity
+
+        // When
+        val result = repository.getCharacterById(characterId)
+
+        // Then
+        assertEquals("Rick", result?.name)
+        assertTrue(result?.isFavorite == true)
+    }
+
+    @Test
+    fun `getCharacterByIdFlow should emit character with favorite status from dao`() = runTest {
+        // Given
+        val characterId = 1
+        val entity = CharacterWithFavoriteEntity(
+            character = CharacterEntity(characterId, "Rick", "Alive", "Human", "", "Male", "", "", "", "", "", ""),
+            isFavorite = true
+        )
+        every { characterDao.getCharacterWithFavoriteByIdFlow(characterId) } returns flowOf(entity)
 
         // When
         val result = repository.getCharacterByIdFlow(characterId).first()
@@ -115,28 +160,5 @@ internal class CharacterRepositoryImplTest {
 
         // Then
         coVerify { favoriteDao.deleteFavorite(any()) }
-    }
-
-    @Test
-    fun `syncCharacters should fetch page 1 when forceRefresh is true`() = runTest {
-        // Given
-        val response = CharacterResponseDto(
-            info = InfoDto(20, 2, "next", null),
-            results = emptyList()
-        )
-        coEvery { apiService.getCharacters(1) } returns response
-
-        // When
-        val result = repository.syncCharacters(forceRefresh = true)
-
-        // Then
-        assertTrue(result.isSuccess)
-        coVerify { 
-            apiService.getCharacters(1)
-            characterDao.deleteAllCharacters()
-            remoteKeysDao.deleteKey(any())
-            characterDao.insertCharacters(any())
-            remoteKeysDao.insertKey(any())
-        }
     }
 }

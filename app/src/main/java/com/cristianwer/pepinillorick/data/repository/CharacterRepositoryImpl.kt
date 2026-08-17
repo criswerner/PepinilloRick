@@ -8,12 +8,15 @@ import com.cristianwer.pepinillorick.data.mapper.toDomain
 import com.cristianwer.pepinillorick.data.mapper.toEntity
 import com.cristianwer.pepinillorick.data.remote.RickAndMortyApiService
 import com.cristianwer.pepinillorick.domain.model.Character
+import com.cristianwer.pepinillorick.domain.model.Resource
 import com.cristianwer.pepinillorick.domain.repository.CharacterRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * Implementation of [CharacterRepository] using Room as a single source of truth.
@@ -31,47 +34,18 @@ internal class CharacterRepositoryImpl @Inject constructor(
     }
 
     override fun getCharacters(): Flow<List<Character>> {
-        return combine(
-            database.characterDao.getCharactersFlow(),
-            database.favoriteDao.getAllFavoriteIdsFlow()
-        ) { entities, favoriteIds ->
-            entities.map { it.toDomain().copy(isFavorite = favoriteIds.contains(it.id)) }
+        return database.characterDao.getCharactersWithFavoriteFlow().map { entities ->
+            entities.map { it.toDomain() }
         }
     }
 
-    override fun getFavoriteCharacters(): Flow<List<Character>> {
-        return database.characterDao.getFavoriteCharactersFlow().map { entities ->
-            entities.map { it.toDomain().copy(isFavorite = true) }
-        }
-    }
+    override fun getCharactersWithSync(forceRefresh: Boolean): Flow<Resource<List<Character>>> = flow {
+        val localDbFlow = getCharacters()
+        val cachedData = localDbFlow.first()
 
-    override suspend fun getCharacterById(id: Int): Character? {
-        val character = database.characterDao.getCharacterById(id)?.toDomain()
-        return character?.let {
-            val isFavorite = database.favoriteDao.getAllFavoriteIdsFlow().map { it.contains(id) }.first()
-            it.copy(isFavorite = isFavorite)
-        }
-    }
+        emit(Resource.Loading(cachedData))
 
-    override fun getCharacterByIdFlow(id: Int): Flow<Character?> {
-        return combine(
-            database.characterDao.getCharacterByIdFlow(id),
-            database.favoriteDao.isFavoriteFlow(id)
-        ) { entity, isFavorite ->
-            entity?.toDomain()?.copy(isFavorite = isFavorite)
-        }
-    }
-
-    override suspend fun toggleFavorite(id: Int, isFavorite: Boolean) {
-        if (isFavorite) {
-            database.favoriteDao.insertFavorite(FavoriteEntity(id))
-        } else {
-            database.favoriteDao.deleteFavorite(FavoriteEntity(id))
-        }
-    }
-
-    override suspend fun syncCharacters(forceRefresh: Boolean): Result<Unit> {
-        return try {
+        try {
             val pageToLoad = if (forceRefresh) {
                 1
             } else {
@@ -88,15 +62,40 @@ internal class CharacterRepositoryImpl @Inject constructor(
                     database.characterDao.deleteAllCharacters()
                     database.remoteKeysDao.deleteKey(CHARACTER_REMOTE_KEY_LABEL)
                 }
-                
+
                 database.characterDao.insertCharacters(entities)
                 database.remoteKeysDao.insertKey(
                     RemoteKeysEntity(CHARACTER_REMOTE_KEY_LABEL, nextPage)
                 )
             }
-            Result.success(Unit)
+            emitAll(localDbFlow.map { Resource.Success(it) })
         } catch (e: Exception) {
-            Result.failure(e)
+            if (e is CancellationException) throw e
+            emitAll(localDbFlow.map { Resource.Error(e.message ?: "Unknown error", it) })
+        }
+    }
+
+    override fun getFavoriteCharacters(): Flow<List<Character>> {
+        return database.characterDao.getFavoriteCharactersFlow().map { entities ->
+            entities.map { it.toDomain().copy(isFavorite = true) }
+        }
+    }
+
+    override suspend fun getCharacterById(id: Int): Character? {
+        return database.characterDao.getCharacterWithFavoriteById(id)?.toDomain()
+    }
+
+    override fun getCharacterByIdFlow(id: Int): Flow<Character?> {
+        return database.characterDao.getCharacterWithFavoriteByIdFlow(id).map { entity ->
+            entity?.toDomain()
+        }
+    }
+
+    override suspend fun toggleFavorite(id: Int, isFavorite: Boolean) {
+        if (isFavorite) {
+            database.favoriteDao.insertFavorite(FavoriteEntity(id))
+        } else {
+            database.favoriteDao.deleteFavorite(FavoriteEntity(id))
         }
     }
 }

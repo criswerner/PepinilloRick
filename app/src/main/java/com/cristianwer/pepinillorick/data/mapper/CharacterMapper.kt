@@ -1,5 +1,6 @@
 package com.cristianwer.pepinillorick.data.mapper
 
+import com.cristianwer.pepinillorick.data.local.dao.CharacterWithFavoriteEntity
 import com.cristianwer.pepinillorick.data.local.entity.CharacterEntity
 import com.cristianwer.pepinillorick.data.remote.dto.CharacterDto
 import com.cristianwer.pepinillorick.data.remote.dto.LocationDto
@@ -7,6 +8,15 @@ import com.cristianwer.pepinillorick.domain.model.Character
 import com.cristianwer.pepinillorick.domain.model.CharacterGender
 import com.cristianwer.pepinillorick.domain.model.CharacterStatus
 import com.cristianwer.pepinillorick.domain.model.Location
+
+/**
+ * Maps a [CharacterWithFavoriteEntity] from the local database to a [Character] domain model.
+ *
+ * @return A domain representation of the character including its favorite status.
+ */
+internal fun CharacterWithFavoriteEntity.toDomain(): Character {
+    return character.toDomain().copy(isFavorite = isFavorite)
+}
 
 /**
  * Maps a [CharacterDto] from the data layer to a [Character] domain model.

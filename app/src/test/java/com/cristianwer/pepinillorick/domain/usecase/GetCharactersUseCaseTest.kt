@@ -1,6 +1,7 @@
 package com.cristianwer.pepinillorick.domain.usecase
 
 import com.cristianwer.pepinillorick.domain.model.Character
+import com.cristianwer.pepinillorick.domain.model.Resource
 import com.cristianwer.pepinillorick.domain.repository.CharacterRepository
 import io.mockk.every
 import io.mockk.mockk
@@ -26,15 +27,15 @@ internal class GetCharactersUseCaseTest {
     @Test
     fun `invoke should return characters flow from repository`() {
         // Given
-        val characters = emptyList<Character>()
-        val flow = flowOf(characters)
-        every { repository.getCharacters() } returns flow
+        val resource = Resource.Success(emptyList<Character>())
+        val flow = flowOf(resource)
+        every { repository.getCharactersWithSync(any()) } returns flow
 
         // When
         val result = useCase()
 
         // Then
         assertEquals(flow, result)
-        verify(exactly = 1) { repository.getCharacters() }
+        verify(exactly = 1) { repository.getCharactersWithSync(any()) }
     }
 }

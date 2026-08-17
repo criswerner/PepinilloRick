@@ -1,6 +1,7 @@
 package com.cristianwer.pepinillorick.domain.repository
 
 import com.cristianwer.pepinillorick.domain.model.Character
+import com.cristianwer.pepinillorick.domain.model.Resource
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -11,6 +12,14 @@ internal interface CharacterRepository {
      * Retrieves a stream of characters from the local database.
      */
     fun getCharacters(): Flow<List<Character>>
+
+    /**
+     * Retrieves a stream of characters from the local database and synchronizes with the network.
+     *
+     * @param forceRefresh If true, it clears the local database and starts from page 1.
+     * @return A [Flow] of [Resource] containing the characters and their status.
+     */
+    fun getCharactersWithSync(forceRefresh: Boolean = false): Flow<Resource<List<Character>>>
 
     /**
      * Retrieves a stream of characters marked as favorites.
@@ -32,16 +41,6 @@ internal interface CharacterRepository {
      * @return A [Flow] emitting the character if found, null otherwise.
      */
     fun getCharacterByIdFlow(id: Int): Flow<Character?>
-
-    /**
-     * Synchronizes characters from the network to the local database.
-     * 
-     * It automatically determines the next page to fetch based on local state.
-     *
-     * @param forceRefresh If true, it clears the local database and starts from page 1.
-     * @return Result indicating success or failure.
-     */
-    suspend fun syncCharacters(forceRefresh: Boolean = false): Result<Unit>
 
     /**
      * Toggles the favorite status of a character.
