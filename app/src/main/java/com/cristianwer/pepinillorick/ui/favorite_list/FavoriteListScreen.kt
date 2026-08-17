@@ -2,6 +2,7 @@ package com.cristianwer.pepinillorick.ui.favorite_list
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,21 +24,31 @@ internal fun FavoriteListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    if (uiState.favorites.isEmpty()) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = stringResource(id = R.string.favorite_list_empty),
-                style = MaterialTheme.typography.bodyLarge
-            )
+    Box(modifier = Modifier.fillMaxSize()) {
+        when (val state = uiState) {
+            is FavoriteListUiState.Loading -> {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            }
+
+            is FavoriteListUiState.Empty -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.favorite_list_empty),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
+
+            is FavoriteListUiState.Success -> {
+                CharacterList(
+                    characters = state.favorites,
+                    onCharacterClick = onCharacterClick,
+                    onFavoriteToggle = { id, _ -> viewModel.toggleFavorite(id, false) }
+                )
+            }
         }
-    } else {
-        CharacterList(
-            characters = uiState.favorites,
-            onCharacterClick = onCharacterClick,
-            onFavoriteToggle = { id, _ -> viewModel.toggleFavorite(id, false) }
-        )
     }
 }

@@ -4,12 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cristianwer.pepinillorick.domain.usecase.GetFavoriteCharactersUseCase
 import com.cristianwer.pepinillorick.domain.usecase.ToggleFavoriteUseCase
-import com.cristianwer.pepinillorick.ui.model.CharacterListState
+import com.cristianwer.pepinillorick.ui.model.CharacterUiModel
 import com.cristianwer.pepinillorick.ui.model.toUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -19,7 +20,7 @@ import javax.inject.Inject
 internal sealed interface FavoriteListUiState {
     data object Loading : FavoriteListUiState
     data object Empty : FavoriteListUiState
-    data class Success(val favorites: CharacterListState) : FavoriteListUiState
+    data class Success(val favorites: List<CharacterUiModel>) : FavoriteListUiState
 }
 
 /**
@@ -40,9 +41,7 @@ internal class FavoriteListViewModel @Inject constructor(
                 _uiState.value = if (list.isEmpty()) {
                     FavoriteListUiState.Empty
                 } else {
-                    FavoriteListUiState.Success(
-                        favorites = CharacterListState(items = list.map { it.toUiModel() })
-                    )
+                    FavoriteListUiState.Success(favorites = list.map { it.toUiModel() })
                 }
             }
         }

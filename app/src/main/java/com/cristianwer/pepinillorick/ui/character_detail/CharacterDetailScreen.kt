@@ -50,7 +50,8 @@ internal fun CharacterDetailScreen(
                     }
                 },
                 actions = {
-                    uiState.character?.let { character ->
+                    val character = (uiState as? CharacterDetailUiState.Success)?.character
+                    if (character != null) {
                         FavoriteButton(
                             isFavorite = character.isFavorite,
                             onFavoriteClick = { viewModel.toggleFavorite() }
@@ -65,20 +66,22 @@ internal fun CharacterDetailScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            uiState.character?.let { character ->
-                CharacterDetailContent(character = character)
-            }
+            when (val state = uiState) {
+                is CharacterDetailUiState.Loading -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
 
-            if (uiState.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            }
+                is CharacterDetailUiState.Success -> {
+                    CharacterDetailContent(character = state.character)
+                }
 
-            if (uiState.error != null || (uiState.character == null && !uiState.isLoading)) {
-                Text(
-                    text = stringResource(id = R.string.character_detail_not_found),
-                    modifier = Modifier.align(Alignment.Center),
-                    color = MaterialTheme.colorScheme.error
-                )
+                is CharacterDetailUiState.Error -> {
+                    Text(
+                        text = stringResource(id = R.string.character_detail_not_found),
+                        modifier = Modifier.align(Alignment.Center),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
             }
         }
     }
