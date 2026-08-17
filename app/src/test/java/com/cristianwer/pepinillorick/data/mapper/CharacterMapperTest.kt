@@ -1,10 +1,10 @@
 package com.cristianwer.pepinillorick.data.mapper
 
 import com.cristianwer.pepinillorick.data.local.entity.CharacterEntity
+import com.cristianwer.pepinillorick.data.remote.dto.CharacterDto
+import com.cristianwer.pepinillorick.data.remote.dto.LocationDto
 import com.cristianwer.pepinillorick.domain.model.CharacterGender
 import com.cristianwer.pepinillorick.domain.model.CharacterStatus
-import com.cristianwer.platform.data.remote.dto.CharacterDto
-import com.cristianwer.platform.data.remote.dto.LocationDto
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Test

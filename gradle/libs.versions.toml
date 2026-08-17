@@ -16,7 +16,6 @@ okhttp = "5.4.0"
 hilt = "2.60.1"
 ksp = "2.1.0-1.0.29"
 room = "2.8.4"
-paging = "3.5.1"
 lifecycleRuntimeCompose = "2.11.0"
 coil = "2.7.0"
 mockk = "1.13.10"
@@ -49,12 +48,9 @@ hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.r
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
-androidx-paging-runtime = { group = "androidx.paging", name = "paging-runtime", version.ref = "paging" }
-androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
 androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycleRuntimeCompose" }
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version = "1.2.0" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
-room-paging = { group = "androidx.room", name = "room-paging", version.ref = "room" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinx-coroutines-test" }
 androidx-paging-common = { group = "androidx.paging", name = "paging-common", version.ref = "androidx-paging-common" }

@@ -6,9 +6,9 @@ import com.cristianwer.pepinillorick.data.local.entity.FavoriteEntity
 import com.cristianwer.pepinillorick.data.local.entity.RemoteKeysEntity
 import com.cristianwer.pepinillorick.data.mapper.toDomain
 import com.cristianwer.pepinillorick.data.mapper.toEntity
+import com.cristianwer.pepinillorick.data.remote.RickAndMortyApiService
 import com.cristianwer.pepinillorick.domain.model.Character
 import com.cristianwer.pepinillorick.domain.repository.CharacterRepository
-import com.cristianwer.platform.network.service.RickAndMortyApiService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first

@@ -1,6 +1,6 @@
-package com.cristianwer.platform.network.service
+package com.cristianwer.pepinillorick.data.remote
 
-import com.cristianwer.platform.data.remote.dto.CharacterResponseDto
+import com.cristianwer.pepinillorick.data.remote.dto.CharacterResponseDto
 import retrofit2.http.GET
 import retrofit2.http.Query
 
