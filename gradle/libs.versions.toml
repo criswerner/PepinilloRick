@@ -21,6 +21,7 @@ coil = "2.7.0"
 mockk = "1.13.10"
 kotlinx-coroutines-test = "1.8.0"
 androidx-paging-common = "3.5.1"
+core-splashscreen = "1.0.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -54,6 +55,7 @@ coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coi
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinx-coroutines-test" }
 androidx-paging-common = { group = "androidx.paging", name = "paging-common", version.ref = "androidx-paging-common" }
+androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "core-splashscreen" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
