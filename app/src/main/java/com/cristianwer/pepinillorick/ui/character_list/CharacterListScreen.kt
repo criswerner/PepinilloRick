@@ -18,8 +18,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.cristianwer.pepinillorick.R
+import com.cristianwer.pepinillorick.ui.components.FavoriteButton
 import com.cristianwer.pepinillorick.ui.model.CharacterUiModel
 import com.cristianwer.pepinillorick.ui.theme.Dimens
+import com.cristianwer.pepinillorick.ui.theme.RickGreen
 
 /**
  * Screen that displays the list of Rick & Morty characters.
@@ -139,15 +141,10 @@ private fun CharacterItem(
                     style = MaterialTheme.typography.bodySmall
                 )
             }
-            IconButton(
-                onClick = { onFavoriteToggle(character.id, !character.isFavorite) }
-            ) {
-                Icon(
-                    imageVector = if (character.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = null,
-                    tint = if (character.isFavorite) Color.Red else LocalContentColor.current
-                )
-            }
+            FavoriteButton(
+                isFavorite = character.isFavorite,
+                onFavoriteClick = { onFavoriteToggle(character.id, !character.isFavorite) }
+            )
         }
     }
 }

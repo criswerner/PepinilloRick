@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.cristianwer.pepinillorick.R
+import com.cristianwer.pepinillorick.ui.components.FavoriteButton
 import com.cristianwer.pepinillorick.ui.model.CharacterDetailUiModel
 import com.cristianwer.pepinillorick.ui.theme.Dimens
 
@@ -50,17 +51,10 @@ internal fun CharacterDetailScreen(
                 },
                 actions = {
                     uiState.character?.let { character ->
-                        IconButton(onClick = { viewModel.toggleFavorite() }) {
-                            Icon(
-                                imageVector = if (character.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                contentDescription = if (character.isFavorite) {
-                                    stringResource(id = R.string.character_list_favorite)
-                                } else {
-                                    stringResource(id = R.string.character_list_not_favorite)
-                                },
-                                tint = if (character.isFavorite) Color.Red else LocalContentColor.current
-                            )
-                        }
+                        FavoriteButton(
+                            isFavorite = character.isFavorite,
+                            onFavoriteClick = { viewModel.toggleFavorite() }
+                        )
                     }
                 }
             )

@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.cristianwer.pepinillorick.R
+import com.cristianwer.pepinillorick.ui.components.FavoriteButton
 import com.cristianwer.pepinillorick.ui.model.CharacterUiModel
 import com.cristianwer.pepinillorick.ui.theme.Dimens
 
@@ -103,13 +104,10 @@ private fun FavoriteCharacterItem(
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
-            IconButton(onClick = onFavoriteClick) {
-                Icon(
-                    imageVector = Icons.Default.Favorite,
-                    contentDescription = stringResource(id = R.string.character_list_favorite),
-                    tint = Color.Red
-                )
-            }
+            FavoriteButton(
+                isFavorite = true,
+                onFavoriteClick = onFavoriteClick
+            )
         }
     }
 }
