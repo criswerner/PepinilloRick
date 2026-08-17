@@ -17,9 +17,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
 import com.cristianwer.pepinillorick.R
 import com.cristianwer.pepinillorick.ui.components.FavoriteButton
+import com.cristianwer.pepinillorick.ui.components.RickAndMortyImage
 import com.cristianwer.pepinillorick.ui.model.CharacterDetailUiModel
 import com.cristianwer.pepinillorick.ui.theme.Dimens
 
@@ -96,13 +96,12 @@ private fun CharacterDetailContent(character: CharacterDetailUiModel) {
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
-        AsyncImage(
-            model = character.imageUrl,
+        RickAndMortyImage(
+            imageUrl = character.imageUrl,
             contentDescription = character.name,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(Dimens.characterDetailImageHeight),
-            contentScale = ContentScale.Crop
+                .height(Dimens.characterDetailImageHeight)
         )
         
         Column(

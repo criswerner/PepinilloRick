@@ -1,25 +1,17 @@
 package com.cristianwer.pepinillorick.ui.favorite_list
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
 import com.cristianwer.pepinillorick.R
-import com.cristianwer.pepinillorick.ui.components.FavoriteButton
-import com.cristianwer.pepinillorick.ui.model.CharacterUiModel
-import com.cristianwer.pepinillorick.ui.theme.Dimens
+import com.cristianwer.pepinillorick.ui.components.CharacterList
 
 /**
  * Screen that displays the list of favorite Rick & Morty characters.
@@ -34,10 +26,11 @@ internal fun FavoriteListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        if (uiState.favorites.isEmpty()) {
+    CharacterList(
+        characters = uiState.favorites,
+        onCharacterClick = onCharacterClick,
+        onFavoriteToggle = { id, _ -> viewModel.toggleFavorite(id, false) },
+        emptyPlaceholder = {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -47,67 +40,6 @@ internal fun FavoriteListScreen(
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(Dimens.spacingMedium),
-                verticalArrangement = Arrangement.spacedBy(Dimens.spacingMedium)
-            ) {
-                items(
-                    items = uiState.favorites,
-                    key = { it.id }
-                ) { character ->
-                    FavoriteCharacterItem(
-                        character = character,
-                        onClick = { onCharacterClick(character.id) },
-                        onFavoriteClick = { viewModel.toggleFavorite(character.id, false) }
-                    )
-                }
-            }
         }
-    }
-}
-
-@Composable
-private fun FavoriteCharacterItem(
-    character: CharacterUiModel,
-    onClick: () -> Unit,
-    onFavoriteClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = Dimens.cardElevation),
-        onClick = onClick
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(Dimens.spacingSmall),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            AsyncImage(
-                model = character.imageUrl,
-                contentDescription = character.name,
-                modifier = Modifier
-                    .size(Dimens.characterItemImageSize),
-                contentScale = ContentScale.Crop
-            )
-            Spacer(modifier = Modifier.width(Dimens.spacingMedium))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = character.name,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "${character.species} - ${character.status}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-            FavoriteButton(
-                isFavorite = true,
-                onFavoriteClick = onFavoriteClick
-            )
-        }
-    }
+    )
 }

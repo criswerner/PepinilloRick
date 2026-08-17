@@ -36,7 +36,7 @@ internal fun CharacterItem(
                 .padding(Dimens.spacingSmall),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            CustomAsyncImage(
+            RickAndMortyImage(
                 imageUrl = character.imageUrl,
                 contentDescription = character.name,
                 modifier = Modifier.size(Dimens.characterItemImageSize)
