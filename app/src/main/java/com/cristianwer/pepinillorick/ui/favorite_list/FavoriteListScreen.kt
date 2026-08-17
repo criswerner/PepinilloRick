@@ -15,9 +15,6 @@ import com.cristianwer.pepinillorick.ui.components.CharacterList
 
 /**
  * Screen that displays the list of favorite Rick & Morty characters.
- *
- * @param viewModel The ViewModel providing the UI state.
- * @param onCharacterClick Callback invoked when a character is selected.
  */
 @Composable
 internal fun FavoriteListScreen(
@@ -26,20 +23,21 @@ internal fun FavoriteListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    CharacterList(
-        characters = uiState.favorites,
-        onCharacterClick = onCharacterClick,
-        onFavoriteToggle = { id, _ -> viewModel.toggleFavorite(id, false) },
-        emptyPlaceholder = {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = stringResource(id = R.string.favorite_list_empty),
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
+    if (uiState.favorites.isEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = stringResource(id = R.string.favorite_list_empty),
+                style = MaterialTheme.typography.bodyLarge
+            )
         }
-    )
+    } else {
+        CharacterList(
+            characters = uiState.favorites,
+            onCharacterClick = onCharacterClick,
+            onFavoriteToggle = { id, _ -> viewModel.toggleFavorite(id, false) }
+        )
+    }
 }
