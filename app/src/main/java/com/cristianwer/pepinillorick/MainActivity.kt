@@ -73,7 +73,7 @@ private fun RickAndMortyApp() {
         topBar = {
             if (showActivityBars) {
                 TopAppBar(
-                    title = { Text(text = stringResource(id = currentBottomNavItem!!.titleRes)) }
+                    title = { Text(text = stringResource(id = currentBottomNavItem.titleRes)) }
                 )
             }
         },

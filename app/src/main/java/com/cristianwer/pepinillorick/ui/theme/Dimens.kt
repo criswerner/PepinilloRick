@@ -28,7 +28,6 @@ internal object Dimens {
     // Component Sizes
     val characterItemImageSize = 100.dp
     val characterDetailPortalSize = 220.dp
-    val characterDetailImageHeight = 300.dp
     val loadingIndicatorSize = 32.dp
     val iconSizeSmall = 18.dp
     val iconSizeMedium = 24.dp
