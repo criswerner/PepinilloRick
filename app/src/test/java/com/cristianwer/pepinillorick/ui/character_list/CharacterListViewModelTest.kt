@@ -14,14 +14,14 @@ import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -36,7 +36,7 @@ internal class CharacterListViewModelTest {
     private val syncCharactersUseCase: SyncCharactersUseCase = mockk()
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase = mockk()
     private val testDispatcher = UnconfinedTestDispatcher()
-    
+
     private val charactersFlow = MutableStateFlow<List<Character>>(emptyList())
 
     private val sampleCharacter = Character(
@@ -56,7 +56,7 @@ internal class CharacterListViewModelTest {
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         every { getCharactersUseCase() } returns charactersFlow
-        coEvery { syncCharactersUseCase(any()) } returns Result.success(Unit)
+        coEvery { syncCharactersUseCase() } returns Result.success(Unit)
         coEvery { toggleFavoriteUseCase(any(), any()) } returns Unit
         
         viewModel = CharacterListViewModel(getCharactersUseCase, syncCharactersUseCase, toggleFavoriteUseCase)
@@ -68,64 +68,72 @@ internal class CharacterListViewModelTest {
     }
 
     @Test
-    fun `toggleFavorite should call use case`() = runTest {
-        // When
-        viewModel.toggleFavorite(1, true)
-
+    fun `initial uiState should be InitialLoading`() = runTest {
         // Then
-        coVerify { toggleFavoriteUseCase(1, true) }
+        assertTrue(viewModel.uiState.value is CharacterListUiState.InitialLoading)
     }
 
     @Test
-    fun `initial uiState should not trigger synchronization`() = runTest {
-        // Then
-        io.mockk.coVerify(exactly = 0) { syncCharactersUseCase(any()) }
-        assertFalse(viewModel.uiState.value.isLoading)
-    }
-
-    @Test
-    fun `initial uiState should reflect characters from use case`() = runTest {
+    fun `uiState should be Success when database has characters`() = runTest {
         // Given
         charactersFlow.value = listOf(sampleCharacter)
 
-        // When
-        val state = viewModel.uiState.value
+        // When & Then: Wait for the state to transition to Success
+        val state = viewModel.uiState.first { it is CharacterListUiState.Success }
 
-        // Then
-        assertEquals(1, state.characters.size)
-        assertEquals(sampleCharacter.name, state.characters[0].name)
-        assertFalse(state.isLoading)
+        assertTrue(state is CharacterListUiState.Success)
+        val successState = state as CharacterListUiState.Success
+        assertEquals(1, successState.characters.items.size)
+        assertEquals(sampleCharacter.name, successState.characters.items[0].name)
     }
 
     @Test
-    fun `loadCharacters should update loading state during execution`() = runTest {
-        // We start collecting the uiState to ensure stateIn is active
-        val job = backgroundScope.launch { viewModel.uiState.collect {} }
+    fun `loadCharacters should trigger sync and keep Success state during pagination`() = runTest {
+        // Given: Already have data in DB
+        charactersFlow.value = listOf(sampleCharacter)
         
-        // Given
+        // Ensure initial success state
+        viewModel.uiState.first { it is CharacterListUiState.Success }
+        
         coEvery { syncCharactersUseCase() } coAnswers {
-            // Check state while "executing"
-            assertEquals(true, viewModel.uiState.value.isLoading)
+            // While syncing, it should be Success with isPaginating = true
+            val currentState = viewModel.uiState.value
+            assertTrue(currentState is CharacterListUiState.Success)
+            assertTrue((currentState as CharacterListUiState.Success).isPaginating)
             Result.success(Unit)
         }
 
         // When
         viewModel.loadCharacters()
 
-        // Then
-        assertFalse(viewModel.uiState.value.isLoading)
-        job.cancel()
+        // Then: After success, isPaginating should be false
+        val finalState = viewModel.uiState.first { it is CharacterListUiState.Success && !it.isPaginating }
+        assertTrue(finalState is CharacterListUiState.Success)
+        assertTrue(!(finalState as CharacterListUiState.Success).isPaginating)
     }
 
     @Test
-    fun `refresh should trigger sync with forceRefresh true`() = runTest {
-        // Given
-        coEvery { syncCharactersUseCase(forceRefresh = true) } returns Result.success(Unit)
+    fun `loadCharacters should result in InitialError when DB is empty and sync fails`() = runTest {
+        // Given: Empty DB
+        charactersFlow.value = emptyList()
+        val errorMessage = "Network Error"
+        coEvery { syncCharactersUseCase() } returns Result.failure(Exception(errorMessage))
 
         // When
-        viewModel.refresh()
+        viewModel.loadCharacters()
+
+        // Then: Wait for error state
+        val state = viewModel.uiState.first { it is CharacterListUiState.InitialError }
+        assertTrue(state is CharacterListUiState.InitialError)
+        assertEquals(errorMessage, (state as CharacterListUiState.InitialError).message)
+    }
+
+    @Test
+    fun `toggleFavorite should delegate to use case`() = runTest {
+        // When
+        viewModel.toggleFavorite(1, true)
 
         // Then
-        io.mockk.coVerify { syncCharactersUseCase(forceRefresh = true) }
+        coVerify { toggleFavoriteUseCase(1, true) }
     }
 }

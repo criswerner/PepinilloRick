@@ -14,14 +14,14 @@ import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -66,7 +66,7 @@ internal class CharacterDetailViewModelTest {
     }
 
     @Test
-    fun `init should observe character when id is present in savedStateHandle`() = runTest {
+    fun `init should update state to Success when character is found`() = runTest {
         // Given
         val characterId = 1
         every { savedStateHandle.get<Int>("characterId") } returns characterId
@@ -75,19 +75,37 @@ internal class CharacterDetailViewModelTest {
         // When
         viewModel = CharacterDetailViewModel(observeCharacterUseCase, toggleFavoriteUseCase, savedStateHandle)
 
-        // Then
-        val state = viewModel.uiState.value
-        assertNotNull(state.character)
-        assertEquals(sampleCharacter.name, state.character?.name)
+        // Then: Wait for Success state
+        val state = viewModel.uiState.first { it is CharacterDetailUiState.Success }
+        assertTrue(state is CharacterDetailUiState.Success)
+        assertEquals(sampleCharacter.name, (state as CharacterDetailUiState.Success).character.name)
     }
 
     @Test
-    fun `toggleFavorite should call use case with current character info`() = runTest {
+    fun `init should update state to Error when character is not found`() = runTest {
+        // Given
+        val characterId = 1
+        every { savedStateHandle.get<Int>("characterId") } returns characterId
+        characterFlow.value = null
+
+        // When
+        viewModel = CharacterDetailViewModel(observeCharacterUseCase, toggleFavoriteUseCase, savedStateHandle)
+
+        // Then: Wait for Error state
+        val state = viewModel.uiState.first { it is CharacterDetailUiState.Error }
+        assertTrue(state is CharacterDetailUiState.Error)
+    }
+
+    @Test
+    fun `toggleFavorite should delegate to use case when in Success state`() = runTest {
         // Given
         val characterId = 1
         every { savedStateHandle.get<Int>("characterId") } returns characterId
         characterFlow.value = sampleCharacter
         viewModel = CharacterDetailViewModel(observeCharacterUseCase, toggleFavoriteUseCase, savedStateHandle)
+
+        // Ensure Success state first
+        viewModel.uiState.first { it is CharacterDetailUiState.Success }
 
         // When
         viewModel.toggleFavorite()

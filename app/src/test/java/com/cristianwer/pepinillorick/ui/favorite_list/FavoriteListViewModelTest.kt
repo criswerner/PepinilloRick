@@ -13,12 +13,14 @@ import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -64,17 +66,23 @@ internal class FavoriteListViewModelTest {
     }
 
     @Test
-    fun `initial uiState should reflect favorites from use case`() = runTest {
+    fun `initial uiState should be Empty when no favorites`() = runTest {
+        // When & Then: Use first to wait for the first emission containing our expected state
+        val state = viewModel.uiState.first { it !is FavoriteListUiState.Loading }
+        assertTrue(state is FavoriteListUiState.Empty)
+    }
+
+    @Test
+    fun `uiState should be Success when use case emits favorites`() = runTest {
         // Given
-        val expectedCharacterName = "Rick"
         favoritesFlow.value = listOf(sampleCharacter)
 
-        // When
-        val state = viewModel.uiState.value
-
-        // Then
-        assertEquals(1, state.favorites.size)
-        assertEquals(expectedCharacterName, state.favorites[0].name)
+        // When & Then: Wait for success state
+        val state = viewModel.uiState.first { it is FavoriteListUiState.Success }
+        assertTrue(state is FavoriteListUiState.Success)
+        val successState = state as FavoriteListUiState.Success
+        assertEquals(1, successState.favorites.size)
+        assertEquals(sampleCharacter.name, successState.favorites[0].name)
     }
 
     @Test

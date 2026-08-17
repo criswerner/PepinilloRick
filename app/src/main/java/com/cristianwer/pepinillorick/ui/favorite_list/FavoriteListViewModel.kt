@@ -15,18 +15,16 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * UI state for the Favorite List screen.
- *
- * @property favorites The list of favorite characters.
+ * Represent the mutually exclusive states of the Favorite List screen.
  */
-internal data class FavoriteListUiState(
-    val favorites: List<CharacterUiModel> = emptyList()
-)
+internal sealed interface FavoriteListUiState {
+    data object Loading : FavoriteListUiState
+    data object Empty : FavoriteListUiState
+    data class Success(val favorites: List<CharacterUiModel>) : FavoriteListUiState
+}
 
 /**
  * ViewModel for the Favorite List screen.
- * 
- * It manages the reactive observation of favorite characters from the domain layer.
  */
 @HiltViewModel
 internal class FavoriteListViewModel @Inject constructor(
@@ -34,14 +32,17 @@ internal class FavoriteListViewModel @Inject constructor(
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(FavoriteListUiState())
+    private val _uiState = MutableStateFlow<FavoriteListUiState>(FavoriteListUiState.Loading)
     val uiState: StateFlow<FavoriteListUiState> = _uiState.asStateFlow()
 
     init {
-        // Observe favorite characters from the local database
         viewModelScope.launch {
-            getFavoriteCharactersUseCase().collect { favorites ->
-                _uiState.update { it.copy(favorites = favorites.map { it.toUiModel() }) }
+            getFavoriteCharactersUseCase().collect { list ->
+                _uiState.value = if (list.isEmpty()) {
+                    FavoriteListUiState.Empty
+                } else {
+                    FavoriteListUiState.Success(favorites = list.map { it.toUiModel() })
+                }
             }
         }
     }
