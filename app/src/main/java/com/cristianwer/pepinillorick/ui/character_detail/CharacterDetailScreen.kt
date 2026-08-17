@@ -25,6 +25,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cristianwer.pepinillorick.R
 import com.cristianwer.pepinillorick.ui.components.CustomAsyncImage
@@ -261,23 +264,36 @@ private fun DetailItem(
                 text = label,
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.LightGray,
-                modifier = Modifier.weight(1f)
+                maxLines = 1,
+                overflow = TextOverflow.Visible
             )
-            if (showStar) {
-                Icon(
-                    imageVector = Icons.Default.Star,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(Dimens.spacingMedium)
+            Spacer(modifier = Modifier.width(Dimens.spacingSmall))
+            
+            // Value part takes remaining space and aligns to end
+            Row(
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (showStar) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(Dimens.iconSizeSmall)
+                    )
+                    Spacer(modifier = Modifier.width(Dimens.spacingExtraSmall))
+                }
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = valueColor,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.End,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
-                Spacer(modifier = Modifier.width(Dimens.spacingExtraSmall))
             }
-            Text(
-                text = value,
-                style = MaterialTheme.typography.bodyLarge,
-                color = valueColor,
-                fontWeight = FontWeight.SemiBold
-            )
         }
     }
 }
