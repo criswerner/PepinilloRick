@@ -14,11 +14,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.cristianwer.pepinillorick.R
 import com.cristianwer.pepinillorick.ui.model.CharacterUiModel
+import com.cristianwer.pepinillorick.ui.theme.Dimens
 
 /**
  * Screen that displays the list of favorite Rick & Morty characters.
@@ -49,8 +49,8 @@ internal fun FavoriteListScreen(
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                contentPadding = PaddingValues(Dimens.spacingMedium),
+                verticalArrangement = Arrangement.spacedBy(Dimens.spacingMedium)
             ) {
                 items(
                     items = uiState.favorites,
@@ -75,23 +75,23 @@ private fun FavoriteCharacterItem(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = Dimens.cardElevation),
         onClick = onClick
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp),
+                .padding(Dimens.spacingSmall),
             verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
                 model = character.imageUrl,
                 contentDescription = character.name,
                 modifier = Modifier
-                    .size(100.dp),
+                    .size(Dimens.characterItemImageSize),
                 contentScale = ContentScale.Crop
             )
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(Dimens.spacingMedium))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = character.name,

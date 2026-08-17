@@ -16,11 +16,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.cristianwer.pepinillorick.R
 import com.cristianwer.pepinillorick.ui.model.CharacterDetailUiModel
+import com.cristianwer.pepinillorick.ui.theme.Dimens
 
 /**
  * Screen that displays the detailed information of a Rick & Morty character.
@@ -107,15 +107,15 @@ private fun CharacterDetailContent(character: CharacterDetailUiModel) {
             contentDescription = character.name,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(300.dp),
+                .height(Dimens.characterDetailImageHeight),
             contentScale = ContentScale.Crop
         )
         
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(Dimens.spacingMedium),
+            verticalArrangement = Arrangement.spacedBy(Dimens.spacingSmall)
         ) {
             Text(
                 text = character.name,
@@ -168,8 +168,8 @@ private fun DetailRow(label: String, value: String) {
             style = MaterialTheme.typography.bodyLarge
         )
         HorizontalDivider(
-            modifier = Modifier.padding(top = 8.dp),
-            thickness = 0.5.dp,
+            modifier = Modifier.padding(top = Dimens.spacingSmall),
+            thickness = Dimens.dividerThickness,
             color = MaterialTheme.colorScheme.outlineVariant
         )
     }
