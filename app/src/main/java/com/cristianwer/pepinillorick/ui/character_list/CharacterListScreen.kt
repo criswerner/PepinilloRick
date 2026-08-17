@@ -35,7 +35,6 @@ internal fun CharacterListScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
 
-    // Detect when we need more data
     val shouldLoadMore = remember {
         derivedStateOf {
             val totalItems = listState.layoutInfo.totalItemsCount
@@ -46,12 +45,10 @@ internal fun CharacterListScreen(
 
     LaunchedEffect(shouldLoadMore.value, uiState.isLoading) {
         if (shouldLoadMore.value && !uiState.isLoading) {
-            // Use character count as a simple check to avoid initial trigger if already loading
             viewModel.loadCharacters()
         }
     }
 
-    // Stable toggle lambda to prevent full list recomposition
     val onFavoriteToggle: (Int, Boolean) -> Unit = remember(viewModel) {
         { id, isFavorite -> viewModel.toggleFavorite(id, isFavorite) }
     }
