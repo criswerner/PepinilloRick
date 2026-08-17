@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -27,6 +28,7 @@ import com.cristianwer.pepinillorick.ui.character_list.CharacterListScreen
 import com.cristianwer.pepinillorick.ui.favorite_list.FavoriteListScreen
 import com.cristianwer.pepinillorick.ui.navigation.BottomNavItem
 import com.cristianwer.pepinillorick.ui.theme.PepinilloRickTheme
+import com.cristianwer.pepinillorick.ui.theme.TranslucentBlack
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
@@ -73,7 +75,11 @@ private fun RickAndMortyApp() {
         topBar = {
             if (showActivityBars) {
                 TopAppBar(
-                    title = { Text(text = stringResource(id = currentBottomNavItem.titleRes)) }
+                    title = { Text(text = stringResource(id = currentBottomNavItem.titleRes)) },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = TranslucentBlack,
+                        titleContentColor = Color.White
+                    )
                 )
             }
         },
