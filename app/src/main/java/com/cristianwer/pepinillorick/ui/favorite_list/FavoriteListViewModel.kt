@@ -7,6 +7,7 @@ import com.cristianwer.pepinillorick.domain.usecase.ToggleFavoriteUseCase
 import com.cristianwer.pepinillorick.ui.model.CharacterListState
 import com.cristianwer.pepinillorick.ui.model.toUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -41,7 +42,7 @@ internal class FavoriteListViewModel @Inject constructor(
                     FavoriteListUiState.Empty
                 } else {
                     FavoriteListUiState.Success(
-                        favorites = CharacterListState(items = list.map { it.toUiModel() })
+                        favorites = CharacterListState(items = list.map { it.toUiModel() }.toImmutableList())
                     )
                 }
             }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,13 +30,14 @@ internal fun CharacterItem(
     onCharacterClick: (Int) -> Unit,
     onFavoriteToggle: (Int, Boolean) -> Unit
 ) {
+    val brushCardColors = remember { Brush.linearGradient(listOf(RickGreen.copy(alpha = 0.5f), Color.Transparent)) }
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = Dimens.spacingExtraSmall)
             .border(
                 width = Dimens.borderThin,
-                brush = Brush.linearGradient(listOf(RickGreen.copy(alpha = 0.5f), Color.Transparent)),
+                brush = brushCardColors,
                 shape = RoundedCornerShape(Dimens.cornerRadiusLarge)
             ),
         shape = RoundedCornerShape(Dimens.cornerRadiusLarge),
@@ -50,13 +52,15 @@ internal fun CharacterItem(
                 .padding(Dimens.spacingSmall),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Mini Portal Image
+
+            val brushBorderColor = remember { Brush.sweepGradient(listOf(RickGreen, Color.Cyan, RickGreen)) }
+
             Box(
                 modifier = Modifier
                     .size(Dimens.characterItemImageSize)
                     .border(
                         width = Dimens.borderMedium,
-                        brush = Brush.sweepGradient(listOf(RickGreen, Color.Cyan, RickGreen)),
+                        brush = brushBorderColor,
                         shape = RoundedCornerShape(Dimens.cornerRadiusMedium)
                     )
                     .padding(Dimens.borderMedium)

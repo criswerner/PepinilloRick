@@ -8,11 +8,15 @@ import com.cristianwer.pepinillorick.domain.usecase.ToggleFavoriteUseCase
 import com.cristianwer.pepinillorick.ui.model.CharacterListState
 import com.cristianwer.pepinillorick.ui.model.toUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -56,7 +60,7 @@ internal class CharacterListViewModel @Inject constructor(
             getCharactersUseCase(event.forceRefresh)
         }
         .map { resource ->
-            val characters = resource.data?.map { it.toUiModel() } ?: emptyList()
+            val characters = resource.data?.map { it.toUiModel() }?.toImmutableList() ?: persistentListOf()
             val listState = CharacterListState(items = characters)
 
             when (resource) {
@@ -81,7 +85,9 @@ internal class CharacterListViewModel @Inject constructor(
                     }
                 }
             }
-        }.stateIn(
+        }
+        .flowOn(Dispatchers.Default)
+        .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = CharacterListUiState.InitialLoading

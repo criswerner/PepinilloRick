@@ -2,13 +2,15 @@ package com.cristianwer.pepinillorick.ui.model
 
 import androidx.compose.runtime.Immutable
 import com.cristianwer.pepinillorick.domain.model.Character
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
 /**
  * Stable wrapper for the character list to prevent unnecessary recompositions.
  */
 @Immutable
 internal data class CharacterListState(
-    val items: List<CharacterUiModel> = emptyList()
+    val items: ImmutableList<CharacterUiModel> = persistentListOf()
 )
 
 /**

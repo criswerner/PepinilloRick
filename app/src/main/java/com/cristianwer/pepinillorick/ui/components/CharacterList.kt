@@ -56,7 +56,6 @@ internal fun CharacterList(
             )
         }
 
-        // Pagination footer states
         if (isPaginating) {
             item {
                 Box(
