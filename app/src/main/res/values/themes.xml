@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <style name="Theme.PepinilloRick" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
+    </style>
 
-    <style name="Theme.PepinilloRick" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <!-- Set the splash screen background, widget background control, and more. -->
+        <item name="windowSplashScreenBackground">@color/RickGreen</item>
+        <!-- Use the icon provided by the user. Assume they save it as ic_launcher_foreground for now
+             or I can use a generic one if I can't create it. -->
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/Theme.PepinilloRick</item>
+    </style>
 </resources>

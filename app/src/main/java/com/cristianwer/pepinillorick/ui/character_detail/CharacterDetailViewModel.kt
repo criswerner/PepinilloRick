@@ -11,29 +11,20 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * UI state for the Character Detail screen.
- *
- * @property character The character details to display, or null if not loaded.
- * @property isLoading Whether the details are currently being fetched.
- * @property error An error message if the fetch failed, or null.
+ * Represent the mutually exclusive states of the Character Detail screen.
  */
-internal data class CharacterDetailUiState(
-    val character: CharacterDetailUiModel? = null,
-    val isLoading: Boolean = false,
-    val error: Int? = null
-)
+internal sealed interface CharacterDetailUiState {
+    data object Loading : CharacterDetailUiState
+    data class Success(val character: CharacterDetailUiModel) : CharacterDetailUiState
+    data object Error : CharacterDetailUiState
+}
 
 /**
  * ViewModel for the Character Detail screen.
- *
- * @property observeCharacterUseCase The use case to observe character details.
- * @property toggleFavoriteUseCase The use case to toggle favorite status.
- * @property savedStateHandle Handle to access navigation arguments.
  */
 @HiltViewModel
 internal class CharacterDetailViewModel @Inject constructor(
@@ -42,7 +33,7 @@ internal class CharacterDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(CharacterDetailUiState())
+    private val _uiState = MutableStateFlow<CharacterDetailUiState>(CharacterDetailUiState.Loading)
     val uiState: StateFlow<CharacterDetailUiState> = _uiState.asStateFlow()
 
     init {
@@ -57,13 +48,12 @@ internal class CharacterDetailViewModel @Inject constructor(
      */
     private fun observeCharacter(id: Int) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+            _uiState.value = CharacterDetailUiState.Loading
             observeCharacterUseCase(id).collect { character ->
-                _uiState.update { 
-                    it.copy(
-                        character = character?.toDetailUiModel(),
-                        isLoading = false
-                    )
+                _uiState.value = if (character != null) {
+                    CharacterDetailUiState.Success(character = character.toDetailUiModel())
+                } else {
+                    CharacterDetailUiState.Error
                 }
             }
         }
@@ -73,9 +63,12 @@ internal class CharacterDetailViewModel @Inject constructor(
      * Toggles the favorite status of the current character.
      */
     fun toggleFavorite() {
-        val character = _uiState.value.character ?: return
-        viewModelScope.launch {
-            toggleFavoriteUseCase(character.id, !character.isFavorite)
+        val currentState = _uiState.value
+        if (currentState is CharacterDetailUiState.Success) {
+            val character = currentState.character
+            viewModelScope.launch {
+                toggleFavoriteUseCase(character.id, !character.isFavorite)
+            }
         }
     }
 }

@@ -1,175 +1,72 @@
 package com.cristianwer.pepinillorick.ui.character_list
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
 import com.cristianwer.pepinillorick.R
-import com.cristianwer.pepinillorick.ui.model.CharacterUiModel
+import com.cristianwer.pepinillorick.ui.components.CharacterList
+import com.cristianwer.pepinillorick.ui.theme.Dimens
 
-/**
- * Screen that displays the list of Rick & Morty characters.
- */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun CharacterListScreen(
     viewModel: CharacterListViewModel,
-    onCharacterClick: (Int) -> Unit,
-    onFavoritesClick: () -> Unit
+    onCharacterClick: (Int) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
 
-    // Initial load when the screen is first shown
-    LaunchedEffect(Unit) {
-        if (uiState.characters.isEmpty()) {
-            viewModel.loadCharacters()
-        }
+    val onFavoriteToggle: (Int, Boolean) -> Unit = remember(viewModel) {
+        { id, isFavorite -> viewModel.toggleFavorite(id, isFavorite) }
     }
 
-    // Detect when we reach the end of the list to load more
-    val shouldLoadMore = remember {
-        derivedStateOf {
-            val totalItems = listState.layoutInfo.totalItemsCount
-            val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()
+    val onRetry = remember(viewModel) {
+        { viewModel.loadCharacters() }
+    }
+
+    // High-level decision based on explicit states from ViewModel
+    Box(modifier = Modifier.fillMaxSize()) {
+        when (val state = uiState) {
+            is CharacterListUiState.InitialLoading -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(modifier = Modifier.size(Dimens.loadingIndicatorSize))
+                }
+                // Disparo de carga inicial si estamos en este estado
+                LaunchedEffect(Unit) { viewModel.loadCharacters() }
+            }
             
-            totalItems > 0 && lastVisibleItem != null && lastVisibleItem.index >= totalItems - 1
-        }
-    }
-
-    LaunchedEffect(shouldLoadMore.value, uiState.isLoading) {
-        if (shouldLoadMore.value && !uiState.isLoading) {
-            viewModel.loadCharacters()
-        }
-    }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(text = stringResource(id = R.string.character_list_title)) },
-                actions = {
-                    IconButton(onClick = onFavoritesClick) {
-                        Icon(
-                            imageVector = Icons.Default.Favorite,
-                            contentDescription = stringResource(id = R.string.character_list_go_to_favorites)
-                        )
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(
-                    items = uiState.characters,
-                    key = { it.id }
-                ) { character ->
-                    CharacterItem(
-                        character = character,
-                        onClick = { onCharacterClick(character.id) },
-                        onFavoriteClick = { viewModel.toggleFavorite(character.id, !character.isFavorite) }
-                    )
-                }
-
-                if (uiState.isLoading) {
-                    item {
-                        LoadingIndicator(modifier = Modifier.fillMaxWidth())
-                    }
-                }
-
-                if (uiState.error != null) {
-                    item {
-                        ErrorRetryItem(
-                            message = stringResource(id = R.string.character_list_error),
-                            onRetry = { viewModel.loadCharacters() }
-                        )
-                    }
-                }
+            is CharacterListUiState.InitialError -> {
+                FullScreenError(onRetry = onRetry)
             }
-        }
-    }
-}
+            
+            is CharacterListUiState.Success -> {
+                // Pagination trigger
+                val shouldLoadMore = remember {
+                    derivedStateOf {
+                        val totalItems = listState.layoutInfo.totalItemsCount
+                        val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()
+                        lastVisibleItem != null && lastVisibleItem.index >= totalItems - 1
+                    }
+                }
 
-/**
- * UI component for a single character item.
- */
-@Composable
-private fun CharacterItem(
-    character: CharacterUiModel,
-    onClick: () -> Unit,
-    onFavoriteClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        onClick = onClick
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            AsyncImage(
-                model = character.imageUrl,
-                contentDescription = character.name,
-                modifier = Modifier
-                    .size(100.dp),
-                contentScale = ContentScale.Crop
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = character.name,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "${character.species} - ${character.status}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    text = stringResource(id = R.string.character_list_last_location),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = character.locationName,
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
-            IconButton(onClick = onFavoriteClick) {
-                Icon(
-                    imageVector = if (character.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = if (character.isFavorite) {
-                        stringResource(id = R.string.character_list_favorite)
-                    } else {
-                        stringResource(id = R.string.character_list_not_favorite)
-                    },
-                    tint = if (character.isFavorite) Color.Red else LocalContentColor.current
+                LaunchedEffect(shouldLoadMore.value) {
+                    if (shouldLoadMore.value && !state.isPaginating) {
+                        viewModel.loadCharacters()
+                    }
+                }
+
+                CharacterList(
+                    characterListState = state.characters,
+                    onCharacterClick = onCharacterClick,
+                    onFavoriteToggle = onFavoriteToggle,
+                    listState = listState,
+                    isPaginating = state.isPaginating,
+                    paginationError = state.paginationError,
+                    onRetry = onRetry
                 )
             }
         }
@@ -177,21 +74,20 @@ private fun CharacterItem(
 }
 
 @Composable
-private fun LoadingIndicator(modifier: Modifier = Modifier) {
-    Box(modifier = modifier.padding(16.dp), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator(modifier = Modifier.size(32.dp))
-    }
-}
-
-@Composable
-private fun ErrorRetryItem(message: String, onRetry: () -> Unit) {
+private fun FullScreenError(onRetry: () -> Unit) {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .fillMaxSize()
+            .padding(Dimens.spacingLarge),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Text(text = message, color = MaterialTheme.colorScheme.error)
+        Text(
+            text = stringResource(id = R.string.character_list_error),
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodyLarge
+        )
+        Spacer(modifier = Modifier.height(Dimens.spacingMedium))
         Button(onClick = onRetry) {
             Text(text = stringResource(id = R.string.character_list_retry))
         }

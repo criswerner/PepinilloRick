@@ -1,26 +1,37 @@
 package com.cristianwer.pepinillorick.ui.character_detail
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material3.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
 import com.cristianwer.pepinillorick.R
+import com.cristianwer.pepinillorick.ui.components.CustomAsyncImage
+import com.cristianwer.pepinillorick.ui.components.FavoriteButton
 import com.cristianwer.pepinillorick.ui.model.CharacterDetailUiModel
+import com.cristianwer.pepinillorick.ui.theme.Dimens
 
 /**
  * Screen that displays the detailed information of a Rick & Morty character.
@@ -49,18 +60,12 @@ internal fun CharacterDetailScreen(
                     }
                 },
                 actions = {
-                    uiState.character?.let { character ->
-                        IconButton(onClick = { viewModel.toggleFavorite() }) {
-                            Icon(
-                                imageVector = if (character.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                contentDescription = if (character.isFavorite) {
-                                    stringResource(id = R.string.character_list_favorite)
-                                } else {
-                                    stringResource(id = R.string.character_list_not_favorite)
-                                },
-                                tint = if (character.isFavorite) Color.Red else LocalContentColor.current
-                            )
-                        }
+                    val character = (uiState as? CharacterDetailUiState.Success)?.character
+                    if (character != null) {
+                        FavoriteButton(
+                            isFavorite = character.isFavorite,
+                            onFavoriteClick = { viewModel.toggleFavorite() }
+                        )
                     }
                 }
             )
@@ -71,20 +76,22 @@ internal fun CharacterDetailScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            uiState.character?.let { character ->
-                CharacterDetailContent(character = character)
-            }
+            when (val state = uiState) {
+                is CharacterDetailUiState.Loading -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
 
-            if (uiState.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            }
+                is CharacterDetailUiState.Success -> {
+                    CharacterDetailContent(character = state.character)
+                }
 
-            if (uiState.error != null || (uiState.character == null && !uiState.isLoading)) {
-                Text(
-                    text = stringResource(id = R.string.character_detail_not_found),
-                    modifier = Modifier.align(Alignment.Center),
-                    color = MaterialTheme.colorScheme.error
-                )
+                is CharacterDetailUiState.Error -> {
+                    Text(
+                        text = stringResource(id = R.string.character_detail_not_found),
+                        modifier = Modifier.align(Alignment.Center),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
             }
         }
     }
@@ -102,20 +109,19 @@ private fun CharacterDetailContent(character: CharacterDetailUiModel) {
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
-        AsyncImage(
-            model = character.imageUrl,
+        CustomAsyncImage(
+            imageUrl = character.imageUrl,
             contentDescription = character.name,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(300.dp),
-            contentScale = ContentScale.Crop
+                .height(Dimens.characterDetailImageHeight)
         )
         
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(Dimens.spacingMedium),
+            verticalArrangement = Arrangement.spacedBy(Dimens.spacingSmall)
         ) {
             Text(
                 text = character.name,
@@ -168,8 +174,8 @@ private fun DetailRow(label: String, value: String) {
             style = MaterialTheme.typography.bodyLarge
         )
         HorizontalDivider(
-            modifier = Modifier.padding(top = 8.dp),
-            thickness = 0.5.dp,
+            modifier = Modifier.padding(top = Dimens.spacingSmall),
+            thickness = Dimens.dividerThickness,
             color = MaterialTheme.colorScheme.outlineVariant
         )
     }

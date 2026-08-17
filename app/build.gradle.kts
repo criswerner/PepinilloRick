@@ -76,6 +76,9 @@ dependencies {
     // Coil
     implementation(libs.coil.compose)
 
+    // Splash Screen
+    implementation(libs.androidx.core.splashscreen)
+
     // Unit Testing
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
