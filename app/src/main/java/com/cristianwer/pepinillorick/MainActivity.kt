@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
@@ -12,7 +13,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -25,6 +28,7 @@ import com.cristianwer.pepinillorick.ui.character_list.CharacterListScreen
 import com.cristianwer.pepinillorick.ui.favorite_list.FavoriteListScreen
 import com.cristianwer.pepinillorick.ui.navigation.BottomNavItem
 import com.cristianwer.pepinillorick.ui.theme.PepinilloRickTheme
+import com.cristianwer.pepinillorick.ui.theme.TranslucentBlack
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
@@ -58,9 +62,9 @@ private fun RickAndMortyApp() {
         )
     }
 
+    // Only show activity bars if we are explicitly on a top-level bottom nav route.
     val currentBottomNavItem = items.find { it.route == currentDestination?.route }
-    val showBars = currentDestination == null || currentBottomNavItem != null
-    val currentTitleRes = currentBottomNavItem?.titleRes ?: R.string.character_list_title
+    val showActivityBars = currentBottomNavItem != null
 
     // Stable navigation lambda
     val onCharacterClick = remember(navController) {
@@ -69,14 +73,18 @@ private fun RickAndMortyApp() {
 
     Scaffold(
         topBar = {
-            if (showBars) {
+            if (showActivityBars) {
                 TopAppBar(
-                    title = { Text(text = stringResource(id = currentTitleRes)) }
+                    title = { Text(text = stringResource(id = currentBottomNavItem.titleRes)) },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = TranslucentBlack,
+                        titleContentColor = Color.White
+                    )
                 )
             }
         },
         bottomBar = {
-            if (showBars) {
+            if (showActivityBars) {
                 NavigationBar {
                     items.forEach { item ->
                         val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
@@ -101,7 +109,11 @@ private fun RickAndMortyApp() {
             }
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        // When not showing activity bars, we provide 0 padding to the content 
+        // so the detail screen can use the full screen area correctly.
+        val contentPadding = if (showActivityBars) innerPadding else PaddingValues(all = 0.dp)
+        
+        Box(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
             NavHost(
                 navController = navController,
                 startDestination = BottomNavItem.Characters.route

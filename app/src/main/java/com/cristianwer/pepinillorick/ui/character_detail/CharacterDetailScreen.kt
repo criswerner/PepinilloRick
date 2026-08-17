@@ -1,44 +1,74 @@
 package com.cristianwer.pepinillorick.ui.character_detail
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Female
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Male
+import androidx.compose.material.icons.filled.Movie
+import androidx.compose.material.icons.filled.Science
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Transgender
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cristianwer.pepinillorick.R
 import com.cristianwer.pepinillorick.ui.components.CustomAsyncImage
 import com.cristianwer.pepinillorick.ui.components.FavoriteButton
 import com.cristianwer.pepinillorick.ui.model.CharacterDetailUiModel
+import com.cristianwer.pepinillorick.ui.theme.DeepSpace
 import com.cristianwer.pepinillorick.ui.theme.Dimens
+import com.cristianwer.pepinillorick.ui.theme.NeonFavorite
+import com.cristianwer.pepinillorick.ui.theme.PortalGreenDark
+import com.cristianwer.pepinillorick.ui.theme.PortalGreenLight
+import com.cristianwer.pepinillorick.ui.theme.RickGreen
+import com.cristianwer.pepinillorick.ui.theme.SemiTransparentBlack
+import com.cristianwer.pepinillorick.ui.theme.TranslucentBlack
+import com.cristianwer.pepinillorick.ui.theme.TranslucentWhite
 
-/**
- * Screen that displays the detailed information of a Rick & Morty character.
- *
- * @param viewModel The ViewModel providing the UI state.
- * @param onBackClick Callback invoked when the user clicks the back button.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun CharacterDetailScreen(
@@ -50,12 +80,21 @@ internal fun CharacterDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = stringResource(id = R.string.character_detail_title)) },
+                title = {
+                    Text(
+                        text = stringResource(id = R.string.character_detail_title).uppercase(),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back",
+                            tint = Color.White
                         )
                     }
                 },
@@ -64,21 +103,40 @@ internal fun CharacterDetailScreen(
                     if (character != null) {
                         FavoriteButton(
                             isFavorite = character.isFavorite,
-                            onFavoriteClick = { viewModel.toggleFavorite() }
+                            onFavoriteClick = { viewModel.toggleFavorite() },
+                            favoriteColor = NeonFavorite
                         )
+                    } else {
+                        Spacer(modifier = Modifier.width(Dimens.buttonHeight))
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = TranslucentBlack,
+                    titleContentColor = Color.White
+                )
             )
-        }
+        },
+        containerColor = DeepSpace
     ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            SemiTransparentBlack,
+                            DeepSpace
+                        )
+                    )
+                )
         ) {
             when (val state = uiState) {
                 is CharacterDetailUiState.Loading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                        color = RickGreen
+                    )
                 }
 
                 is CharacterDetailUiState.Success -> {
@@ -97,86 +155,184 @@ internal fun CharacterDetailScreen(
     }
 }
 
-/**
- * Content of the character detail screen.
- *
- * @param character The character detail information.
- */
 @Composable
 private fun CharacterDetailContent(character: CharacterDetailUiModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
+            .padding(Dimens.spacingMedium),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        CustomAsyncImage(
-            imageUrl = character.imageUrl,
-            contentDescription = character.name,
+        // Character Image with Portal Border
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(Dimens.characterDetailImageHeight)
-        )
-        
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(Dimens.spacingMedium),
-            verticalArrangement = Arrangement.spacedBy(Dimens.spacingSmall)
+                .size(Dimens.characterDetailPortalSize)
+                .padding(Dimens.spacingSmall)
+                .shadow(
+                    elevation = Dimens.shadowLarge,
+                    shape = CircleShape,
+                    ambientColor = RickGreen,
+                    spotColor = RickGreen
+                )
+                .border(
+                    width = Dimens.borderThick,
+                    brush = Brush.sweepGradient(
+                        colors = listOf(
+                            RickGreen,
+                            PortalGreenLight,
+                            PortalGreenDark,
+                            RickGreen
+                        )
+                    ),
+                    shape = CircleShape
+                )
+                .padding(Dimens.spacingExtraSmall)
         ) {
+            CustomAsyncImage(
+                imageUrl = character.imageUrl,
+                contentDescription = character.name,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
+            )
+        }
+
+        Spacer(modifier = Modifier.height(Dimens.spacingLarge))
+
+        // Character Name with Glow
+        Text(
+            text = character.name.uppercase(),
+            style = MaterialTheme.typography.headlineMedium.copy(
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = Dimens.textLetterSpacing,
+                shadow = shadow(color = RickGreen, blurRadius = 10f)
+            ),
+            color = Color.White,
+            textAlign = TextAlign.Center
+        )
+
+        Text(
+            text = "${character.species}, ${character.locationName}",
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Gray,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(Dimens.spacingExtraLarge))
+
+        // Detail Cards
+        DetailItem(
+            icon = Icons.Default.Favorite,
+            label = stringResource(id = R.string.character_detail_status).uppercase(),
+            value = character.status,
+            valueColor = if (character.status == "Alive") RickGreen else Color.Red
+        )
+        DetailItem(
+            icon = Icons.Default.Science,
+            label = stringResource(id = R.string.character_detail_species).uppercase(),
+            value = character.species
+        )
+        DetailItem(
+            icon = when (character.gender) {
+                "Male" -> Icons.Default.Male
+                "Female" -> Icons.Default.Female
+                else -> Icons.Default.Transgender
+            },
+            label = stringResource(id = R.string.character_detail_gender).uppercase(),
+            value = character.gender
+        )
+        DetailItem(
+            icon = Icons.Default.AutoAwesome,
+            label = stringResource(id = R.string.character_detail_origin).uppercase(),
+            value = character.originName
+        )
+        DetailItem(
+            icon = Icons.Default.LocationOn,
+            label = stringResource(id = R.string.character_detail_location).uppercase(),
+            value = character.locationName
+        )
+        DetailItem(
+            icon = Icons.Default.Movie,
+            label = stringResource(id = R.string.character_detail_episodes).uppercase(),
+            value = character.episodeCount.toString(),
+            showStar = true
+        )
+
+        Spacer(modifier = Modifier.height(Dimens.spacingExtraLarge))
+    }
+}
+
+@Composable
+private fun DetailItem(
+    icon: ImageVector,
+    label: String,
+    value: String,
+    valueColor: Color = Color.White,
+    showStar: Boolean = false
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = Dimens.spacingExtraSmall),
+        shape = RoundedCornerShape(Dimens.cornerRadiusExtraLarge),
+        colors = CardDefaults.cardColors(
+            containerColor = TranslucentWhite
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = Dimens.spacingMedium, vertical = Dimens.spacingSmall),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(Dimens.iconSizeMedium)
+            )
+            Spacer(modifier = Modifier.width(Dimens.spacingMedium))
             Text(
-                text = character.name,
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold
+                text = label,
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.LightGray,
+                maxLines = 1,
+                overflow = TextOverflow.Visible
             )
+            Spacer(modifier = Modifier.width(Dimens.spacingSmall))
             
-            DetailRow(
-                label = stringResource(id = R.string.character_detail_status),
-                value = character.status
-            )
-            DetailRow(
-                label = stringResource(id = R.string.character_detail_species),
-                value = character.species
-            )
-            DetailRow(
-                label = stringResource(id = R.string.character_detail_gender),
-                value = character.gender
-            )
-            DetailRow(
-                label = stringResource(id = R.string.character_detail_origin),
-                value = character.originName
-            )
-            DetailRow(
-                label = stringResource(id = R.string.character_detail_location),
-                value = character.locationName
-            )
-            DetailRow(
-                label = stringResource(id = R.string.character_detail_episodes),
-                value = character.episodeCount.toString()
-            )
+            // Value part takes remaining space and aligns to end
+            Row(
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (showStar) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(Dimens.iconSizeSmall)
+                    )
+                    Spacer(modifier = Modifier.width(Dimens.spacingExtraSmall))
+                }
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = valueColor,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.End,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
     }
 }
 
-/**
- * A row displaying a label and a value.
- */
-@Composable
-private fun DetailRow(label: String, value: String) {
-    Column {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight.SemiBold
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyLarge
-        )
-        HorizontalDivider(
-            modifier = Modifier.padding(top = Dimens.spacingSmall),
-            thickness = Dimens.dividerThickness,
-            color = MaterialTheme.colorScheme.outlineVariant
-        )
-    }
-}
+private fun shadow(color: Color, blurRadius: Float) = Shadow(
+    color = color,
+    blurRadius = blurRadius
+)
