@@ -30,9 +30,7 @@ import com.cristianwer.pepinillorick.R
 import com.cristianwer.pepinillorick.ui.components.CustomAsyncImage
 import com.cristianwer.pepinillorick.ui.components.FavoriteButton
 import com.cristianwer.pepinillorick.ui.model.CharacterDetailUiModel
-import com.cristianwer.pepinillorick.ui.theme.DeepSpace
-import com.cristianwer.pepinillorick.ui.theme.Dimens
-import com.cristianwer.pepinillorick.ui.theme.RickGreen
+import com.cristianwer.pepinillorick.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,14 +67,14 @@ internal fun CharacterDetailScreen(
                         FavoriteButton(
                             isFavorite = character.isFavorite,
                             onFavoriteClick = { viewModel.toggleFavorite() },
-                            favoriteColor = Color(0xFF00FFCC) // Glowing green-blue for favorite
+                            favoriteColor = NeonFavorite
                         )
                     } else {
                         Spacer(modifier = Modifier.width(Dimens.buttonHeight))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Black.copy(alpha = 0.5f),
+                    containerColor = TranslucentBlack,
                     titleContentColor = Color.White
                 )
             )
@@ -90,7 +88,7 @@ internal fun CharacterDetailScreen(
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            Color.Black.copy(alpha = 0.8f),
+                            SemiTransparentBlack,
                             DeepSpace
                         )
                     )
@@ -145,8 +143,8 @@ private fun CharacterDetailContent(character: CharacterDetailUiModel) {
                     brush = Brush.sweepGradient(
                         colors = listOf(
                             RickGreen,
-                            Color(0xFFB2FF59),
-                            Color(0xFF76FF03),
+                            PortalGreenLight,
+                            PortalGreenDark,
                             RickGreen
                         )
                     ),
@@ -243,7 +241,7 @@ private fun DetailItem(
             .padding(vertical = Dimens.spacingExtraSmall),
         shape = RoundedCornerShape(Dimens.cornerRadiusExtraLarge),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White.copy(alpha = 0.05f)
+            containerColor = TranslucentWhite
         )
     ) {
         Row(

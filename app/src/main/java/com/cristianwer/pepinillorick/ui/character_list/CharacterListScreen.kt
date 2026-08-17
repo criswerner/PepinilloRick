@@ -14,9 +14,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cristianwer.pepinillorick.R
 import com.cristianwer.pepinillorick.ui.components.CharacterList
-import com.cristianwer.pepinillorick.ui.theme.DeepSpace
-import com.cristianwer.pepinillorick.ui.theme.Dimens
-import com.cristianwer.pepinillorick.ui.theme.RickGreen
+import com.cristianwer.pepinillorick.ui.theme.*
 
 @Composable
 internal fun CharacterListScreen(
@@ -41,7 +39,7 @@ internal fun CharacterListScreen(
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        Color.Black.copy(alpha = 0.8f),
+                        SemiTransparentBlack,
                         DeepSpace
                     )
                 )

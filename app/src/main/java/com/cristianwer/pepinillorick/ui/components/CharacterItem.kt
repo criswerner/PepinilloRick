@@ -14,8 +14,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.cristianwer.pepinillorick.R
 import com.cristianwer.pepinillorick.ui.model.CharacterUiModel
-import com.cristianwer.pepinillorick.ui.theme.Dimens
-import com.cristianwer.pepinillorick.ui.theme.RickGreen
+import com.cristianwer.pepinillorick.ui.theme.*
 
 /**
  * Reusable component for displaying a character in a list with Rick & Morty aesthetic.
@@ -41,7 +40,7 @@ internal fun CharacterItem(
             ),
         shape = RoundedCornerShape(Dimens.cornerRadiusLarge),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White.copy(alpha = 0.05f)
+            containerColor = TranslucentWhite
         ),
         onClick = { onCharacterClick(character.id) }
     ) {
@@ -107,7 +106,7 @@ internal fun CharacterItem(
             FavoriteButton(
                 isFavorite = character.isFavorite,
                 onFavoriteClick = { onFavoriteToggle(character.id, !character.isFavorite) },
-                favoriteColor = Color(0xFF00FFCC)
+                favoriteColor = NeonFavorite
             )
         }
     }
