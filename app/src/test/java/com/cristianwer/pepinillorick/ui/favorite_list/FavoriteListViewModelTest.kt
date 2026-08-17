@@ -81,8 +81,8 @@ internal class FavoriteListViewModelTest {
         val state = viewModel.uiState.first { it is FavoriteListUiState.Success }
         assertTrue(state is FavoriteListUiState.Success)
         val successState = state as FavoriteListUiState.Success
-        assertEquals(1, successState.favorites.size)
-        assertEquals(sampleCharacter.name, successState.favorites[0].name)
+        assertEquals(1, successState.favorites.items.size)
+        assertEquals(sampleCharacter.name, successState.favorites.items[0].name)
     }
 
     @Test
