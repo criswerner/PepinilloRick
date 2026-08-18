@@ -1,7 +1,6 @@
 package com.cristianwer.pepinillorick.ui.mapper
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Female
 import androidx.compose.material.icons.filled.Male
 import androidx.compose.material.icons.filled.Transgender
