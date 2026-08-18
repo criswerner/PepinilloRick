@@ -2,6 +2,7 @@ package com.cristianwer.pepinillorick.ui.favorite_list
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -14,6 +15,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cristianwer.pepinillorick.R
+import com.cristianwer.pepinillorick.ui.components.CharacterItemSkeleton
 import com.cristianwer.pepinillorick.ui.components.CharacterList
 import com.cristianwer.pepinillorick.ui.theme.*
 
@@ -39,10 +41,7 @@ internal fun FavoriteListScreen(
     ) {
         when (val state = uiState) {
             is FavoriteListUiState.Loading -> {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                    color = RickGreen
-                )
+                FavoriteLoadingSkeleton()
             }
 
             is FavoriteListUiState.Empty -> {
@@ -66,6 +65,20 @@ internal fun FavoriteListScreen(
                     onFavoriteToggle = { id, _ -> viewModel.toggleFavorite(id, false) }
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun FavoriteLoadingSkeleton() {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(Dimens.spacingMedium),
+        verticalArrangement = Arrangement.spacedBy(Dimens.spacingMedium),
+        userScrollEnabled = false
+    ) {
+        items(8) {
+            CharacterItemSkeleton()
         }
     }
 }

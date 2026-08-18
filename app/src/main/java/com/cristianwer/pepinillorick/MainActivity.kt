@@ -50,8 +50,6 @@ internal class MainActivity : ComponentActivity() {
 private fun RickAndMortyApp() {
     val navController = rememberNavController()
 
-    // Root NavHost: Manages transitions between full-screen layered destinations.
-    // enter/exit transitions are applied to the entire screen including Top/Bottom bars.
     NavHost(
         navController = navController,
         startDestination = "main_tabs",
