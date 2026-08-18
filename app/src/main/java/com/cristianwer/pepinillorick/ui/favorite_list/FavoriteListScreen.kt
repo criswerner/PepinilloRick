@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -26,17 +27,15 @@ internal fun FavoriteListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    val backgroundBrush = remember {
+        Brush.verticalGradient(
+            colors = listOf(SemiTransparentBlack, DeepSpace)
+        )
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        SemiTransparentBlack,
-                        DeepSpace
-                    )
-                )
-            )
+            .background(backgroundBrush)
     ) {
         when (val state = uiState) {
             is FavoriteListUiState.Loading -> {
