@@ -12,13 +12,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.cristianwer.pepinillorick.ui.theme.Dimens
-import com.cristianwer.pepinillorick.ui.theme.TranslucentWhite
 
 /**
  * A skeleton loader representing a character item.
@@ -33,7 +33,7 @@ internal fun CharacterItemSkeleton(
             .padding(horizontal = Dimens.spacingExtraSmall),
         shape = RoundedCornerShape(Dimens.cornerRadiusLarge),
         colors = CardDefaults.cardColors(
-            containerColor = TranslucentWhite
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
         )
     ) {
         Row(

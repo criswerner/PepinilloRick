@@ -15,7 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -29,7 +28,6 @@ import com.cristianwer.pepinillorick.ui.character_list.CharacterListScreen
 import com.cristianwer.pepinillorick.ui.favorite_list.FavoriteListScreen
 import com.cristianwer.pepinillorick.ui.navigation.BottomNavItem
 import com.cristianwer.pepinillorick.ui.theme.PepinilloRickTheme
-import com.cristianwer.pepinillorick.ui.theme.TranslucentBlack
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -85,14 +83,15 @@ private fun MainNavScreen(onCharacterClick: (Int) -> Unit) {
 
     val items = remember { listOf(BottomNavItem.Characters, BottomNavItem.Favorites) }
     val currentNavItem = items.find { it.route == currentDestination?.route } ?: BottomNavItem.Characters
+    val colorScheme = MaterialTheme.colorScheme
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(text = stringResource(id = currentNavItem.titleRes)) },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = TranslucentBlack,
-                    titleContentColor = Color.White
+                    containerColor = colorScheme.surface.copy(alpha = 0.5f),
+                    titleContentColor = colorScheme.onSurface
                 )
             )
         },

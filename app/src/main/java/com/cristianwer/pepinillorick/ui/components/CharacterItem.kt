@@ -30,7 +30,16 @@ internal fun CharacterItem(
     onCharacterClick: (Int) -> Unit,
     onFavoriteToggle: (Int, Boolean) -> Unit
 ) {
-    val brushCardColors = remember { Brush.linearGradient(listOf(RickGreen.copy(alpha = 0.5f), Color.Transparent)) }
+    val colorScheme = MaterialTheme.colorScheme
+    val brushCardColors = remember(colorScheme) {
+        Brush.linearGradient(
+            listOf(
+                colorScheme.primary.copy(alpha = 0.5f),
+                Color.Transparent
+            )
+        )
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -42,7 +51,7 @@ internal fun CharacterItem(
             ),
         shape = RoundedCornerShape(Dimens.cornerRadiusLarge),
         colors = CardDefaults.cardColors(
-            containerColor = TranslucentWhite
+            containerColor = colorScheme.surfaceVariant.copy(alpha = 0.5f)
         ),
         onClick = { onCharacterClick(character.id) }
     ) {
@@ -53,7 +62,15 @@ internal fun CharacterItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            val brushBorderColor = remember { Brush.sweepGradient(listOf(RickGreen, Color.Cyan, RickGreen)) }
+            val brushBorderColor = remember(colorScheme) {
+                Brush.sweepGradient(
+                    listOf(
+                        colorScheme.primary,
+                        colorScheme.secondary,
+                        colorScheme.primary
+                    )
+                )
+            }
 
             Box(
                 modifier = Modifier
@@ -83,12 +100,12 @@ internal fun CharacterItem(
                         fontWeight = FontWeight.ExtraBold,
                         letterSpacing = Dimens.textLetterSpacingSmall
                     ),
-                    color = Color.White
+                    color = colorScheme.onSurface
                 )
                 Text(
                     text = "${character.species} - ${character.status}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = if (character.status == "Alive") RickGreen else Color.LightGray
+                    color = if (character.status == "Alive") colorScheme.primary else colorScheme.onSurfaceVariant
                 )
                 
                 Spacer(modifier = Modifier.height(Dimens.spacingSmall))
@@ -96,21 +113,23 @@ internal fun CharacterItem(
                 Text(
                     text = stringResource(id = R.string.character_list_last_location).uppercase(),
                     style = MaterialTheme.typography.labelSmall,
-                    color = RickGreen.copy(alpha = 0.7f),
+                    color = colorScheme.primary.copy(alpha = 0.7f),
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = character.locationName,
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.White.copy(alpha = 0.8f),
+                    color = colorScheme.onSurface.copy(alpha = 0.8f),
                     maxLines = 1
                 )
             }
             
             FavoriteButton(
                 isFavorite = character.isFavorite,
-                onFavoriteClick = { onFavoriteToggle(character.id, !character.isFavorite) },
-                favoriteColor = NeonFavorite
+                onFavoriteClick = remember(character.id, character.isFavorite, onFavoriteToggle) {
+                    { onFavoriteToggle(character.id, !character.isFavorite) }
+                },
+                favoriteColor = colorScheme.primary // Use theme primary (darker in light mode)
             )
         }
     }

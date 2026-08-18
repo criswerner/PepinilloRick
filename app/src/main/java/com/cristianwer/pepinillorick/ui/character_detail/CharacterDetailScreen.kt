@@ -60,15 +60,9 @@ import com.cristianwer.pepinillorick.R
 import com.cristianwer.pepinillorick.ui.components.CustomAsyncImage
 import com.cristianwer.pepinillorick.ui.components.FavoriteButton
 import com.cristianwer.pepinillorick.ui.model.CharacterDetailUiModel
-import com.cristianwer.pepinillorick.ui.theme.DeepSpace
 import com.cristianwer.pepinillorick.ui.theme.Dimens
-import com.cristianwer.pepinillorick.ui.theme.NeonFavorite
 import com.cristianwer.pepinillorick.ui.theme.PortalGreenDark
 import com.cristianwer.pepinillorick.ui.theme.PortalGreenLight
-import com.cristianwer.pepinillorick.ui.theme.RickGreen
-import com.cristianwer.pepinillorick.ui.theme.SemiTransparentBlack
-import com.cristianwer.pepinillorick.ui.theme.TranslucentBlack
-import com.cristianwer.pepinillorick.ui.theme.TranslucentWhite
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,6 +71,7 @@ internal fun CharacterDetailScreen(
     onBackClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val colorScheme = MaterialTheme.colorScheme
 
     Scaffold(
         topBar = {
@@ -95,7 +90,7 @@ internal fun CharacterDetailScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = Color.White
+                            tint = colorScheme.onSurface
                         )
                     }
                 },
@@ -105,19 +100,19 @@ internal fun CharacterDetailScreen(
                         FavoriteButton(
                             isFavorite = character.isFavorite,
                             onFavoriteClick = { viewModel.toggleFavorite() },
-                            favoriteColor = NeonFavorite
+                            favoriteColor = colorScheme.primary
                         )
                     } else {
                         Spacer(modifier = Modifier.width(Dimens.buttonHeight))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = TranslucentBlack,
-                    titleContentColor = Color.White
+                    containerColor = colorScheme.surface.copy(alpha = 0.5f),
+                    titleContentColor = colorScheme.onSurface
                 )
             )
         },
-        containerColor = DeepSpace,
+        containerColor = colorScheme.background,
         contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { paddingValues ->
         Box(
@@ -127,8 +122,8 @@ internal fun CharacterDetailScreen(
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            SemiTransparentBlack,
-                            DeepSpace
+                            colorScheme.surface.copy(alpha = 0.8f),
+                            colorScheme.background
                         )
                     )
                 )
@@ -137,7 +132,7 @@ internal fun CharacterDetailScreen(
                 is CharacterDetailUiState.Loading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
-                        color = RickGreen
+                        color = colorScheme.primary
                     )
                 }
 
@@ -149,7 +144,7 @@ internal fun CharacterDetailScreen(
                     Text(
                         text = stringResource(id = R.string.character_detail_not_found),
                         modifier = Modifier.align(Alignment.Center),
-                        color = MaterialTheme.colorScheme.error
+                        color = colorScheme.error
                     )
                 }
             }
@@ -159,6 +154,7 @@ internal fun CharacterDetailScreen(
 
 @Composable
 private fun CharacterDetailContent(character: CharacterDetailUiModel) {
+    val colorScheme = MaterialTheme.colorScheme
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -166,6 +162,7 @@ private fun CharacterDetailContent(character: CharacterDetailUiModel) {
             .padding(Dimens.spacingMedium),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Character Image with Portal Border
         Box(
             modifier = Modifier
                 .size(Dimens.characterDetailPortalSize)
@@ -173,17 +170,17 @@ private fun CharacterDetailContent(character: CharacterDetailUiModel) {
                 .shadow(
                     elevation = Dimens.shadowLarge,
                     shape = CircleShape,
-                    ambientColor = RickGreen,
-                    spotColor = RickGreen
+                    ambientColor = colorScheme.primary,
+                    spotColor = colorScheme.primary
                 )
                 .border(
                     width = Dimens.borderThick,
                     brush = Brush.sweepGradient(
                         colors = listOf(
-                            RickGreen,
+                            colorScheme.primary,
                             PortalGreenLight,
                             PortalGreenDark,
-                            RickGreen
+                            colorScheme.primary
                         )
                     ),
                     shape = CircleShape
@@ -214,32 +211,34 @@ private fun CharacterDetailContent(character: CharacterDetailUiModel) {
 
 @Composable
 private fun NameWithGlowCharacter(character: CharacterDetailUiModel) {
+    val colorScheme = MaterialTheme.colorScheme
     Text(
         text = character.name.uppercase(),
         style = MaterialTheme.typography.headlineMedium.copy(
             fontWeight = FontWeight.ExtraBold,
             letterSpacing = Dimens.textLetterSpacing,
-            shadow = shadow(color = RickGreen, blurRadius = 10f)
+            shadow = Shadow(color = colorScheme.primary, blurRadius = 10f)
         ),
-        color = Color.White,
+        color = colorScheme.onBackground,
         textAlign = TextAlign.Center
     )
 
     Text(
         text = "${character.species}, ${character.locationName}",
         style = MaterialTheme.typography.bodyMedium,
-        color = Color.Gray,
+        color = colorScheme.onSurfaceVariant,
         textAlign = TextAlign.Center
     )
 }
 
 @Composable
 private fun DetailCardCharacter(character: CharacterDetailUiModel) {
+    val colorScheme = MaterialTheme.colorScheme
     DetailItem(
         icon = Icons.Default.Favorite,
         label = stringResource(id = R.string.character_detail_status).uppercase(),
         value = character.status,
-        valueColor = if (character.status == "Alive") RickGreen else Color.Red
+        valueColor = if (character.status == "Alive") colorScheme.primary else colorScheme.error
     )
     DetailItem(
         icon = Icons.Default.Science,
@@ -278,16 +277,17 @@ private fun DetailItem(
     icon: ImageVector,
     label: String,
     value: String,
-    valueColor: Color = Color.White,
+    valueColor: Color = MaterialTheme.colorScheme.onSurface,
     showStar: Boolean = false
 ) {
+    val colorScheme = MaterialTheme.colorScheme
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = Dimens.spacingExtraSmall),
         shape = RoundedCornerShape(Dimens.cornerRadiusExtraLarge),
         colors = CardDefaults.cardColors(
-            containerColor = TranslucentWhite
+            containerColor = colorScheme.surfaceVariant.copy(alpha = 0.2f)
         )
     ) {
         Row(
@@ -299,19 +299,20 @@ private fun DetailItem(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = Color.White,
+                tint = colorScheme.primary,
                 modifier = Modifier.size(Dimens.iconSizeMedium)
             )
             Spacer(modifier = Modifier.width(Dimens.spacingMedium))
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodySmall,
-                color = Color.LightGray,
+                color = colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Visible
             )
             Spacer(modifier = Modifier.width(Dimens.spacingSmall))
             
+            // Value part takes remaining space and aligns to end
             Row(
                 modifier = Modifier.weight(1f),
                 horizontalArrangement = Arrangement.End,
@@ -321,7 +322,7 @@ private fun DetailItem(
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = null,
-                        tint = Color.White,
+                        tint = colorScheme.primary,
                         modifier = Modifier.size(Dimens.iconSizeSmall)
                     )
                     Spacer(modifier = Modifier.width(Dimens.spacingExtraSmall))
@@ -339,8 +340,3 @@ private fun DetailItem(
         }
     }
 }
-
-private fun shadow(color: Color, blurRadius: Float) = Shadow(
-    color = color,
-    blurRadius = blurRadius
-)

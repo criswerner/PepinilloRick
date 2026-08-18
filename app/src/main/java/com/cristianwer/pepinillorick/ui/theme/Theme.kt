@@ -17,11 +17,12 @@ private val DarkColorScheme = darkColorScheme(
     onSecondary = OffWhite,
     onTertiary = DeepSpace,
     onBackground = OffWhite,
-    onSurface = OffWhite
+    onSurface = OffWhite,
+    error = ErrorDark
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = RickGreen,
+    primary = RickGreenDark,
     secondary = RickBlue,
     tertiary = MortyYellow,
     background = OffWhite,
@@ -30,7 +31,8 @@ private val LightColorScheme = lightColorScheme(
     onSecondary = Color.White,
     onTertiary = Color.White,
     onBackground = DeepSpace,
-    onSurface = DeepSpace
+    onSurface = DeepSpace,
+    error = ErrorLight
 )
 
 @Composable
@@ -38,7 +40,7 @@ fun PepinilloRickTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) DarkColorScheme else DarkColorScheme
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
     MaterialTheme(
         colorScheme = colorScheme,

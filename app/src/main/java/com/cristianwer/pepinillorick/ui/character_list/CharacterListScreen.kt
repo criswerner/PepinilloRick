@@ -31,10 +31,7 @@ import com.cristianwer.pepinillorick.domain.model.UiError
 import com.cristianwer.pepinillorick.ui.components.CharacterItemSkeleton
 import com.cristianwer.pepinillorick.ui.components.CharacterList
 import com.cristianwer.pepinillorick.ui.mapper.asString
-import com.cristianwer.pepinillorick.ui.theme.DeepSpace
 import com.cristianwer.pepinillorick.ui.theme.Dimens
-import com.cristianwer.pepinillorick.ui.theme.RickGreen
-import com.cristianwer.pepinillorick.ui.theme.SemiTransparentBlack
 
 @Composable
 internal fun CharacterListScreen(
@@ -52,9 +49,13 @@ internal fun CharacterListScreen(
         { viewModel.loadCharacters() }
     }
 
-    val backgroundBrush = remember {
+    val colorScheme = MaterialTheme.colorScheme
+    val backgroundBrush = remember(colorScheme) {
         Brush.verticalGradient(
-            colors = listOf(SemiTransparentBlack, DeepSpace)
+            colors = listOf(
+                colorScheme.surface,
+                colorScheme.background
+            )
         )
     }
     Box(
@@ -136,9 +137,12 @@ private fun FullScreenError(error: UiError, onRetry: () -> Unit) {
         Spacer(modifier = Modifier.height(Dimens.spacingMedium))
         Button(
             onClick = onRetry,
-            colors = ButtonDefaults.buttonColors(containerColor = RickGreen)
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
         ) {
-            Text(text = stringResource(id = R.string.character_list_retry), color = DeepSpace)
+            Text(
+                text = stringResource(id = R.string.character_list_retry),
+                color = MaterialTheme.colorScheme.onPrimary
+            )
         }
     }
 }
