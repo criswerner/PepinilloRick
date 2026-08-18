@@ -3,7 +3,6 @@ package com.cristianwer.pepinillorick.data.repository
 import com.cristianwer.pepinillorick.data.local.dao.FavoriteDao
 import com.cristianwer.pepinillorick.data.local.entity.FavoriteEntity
 import com.cristianwer.pepinillorick.domain.model.FavoriteType
-import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk

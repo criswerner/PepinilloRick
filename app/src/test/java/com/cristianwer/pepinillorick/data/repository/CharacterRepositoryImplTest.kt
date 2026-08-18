@@ -7,13 +7,12 @@ import com.cristianwer.pepinillorick.data.local.dao.FavoriteDao
 import com.cristianwer.pepinillorick.data.local.dao.RemoteKeysDao
 import com.cristianwer.pepinillorick.data.local.database.RickAndMortyDatabase
 import com.cristianwer.pepinillorick.data.local.entity.CharacterEntity
-import com.cristianwer.pepinillorick.domain.model.Resource
-import com.cristianwer.pepinillorick.domain.model.UiError
 import com.cristianwer.pepinillorick.data.remote.RickAndMortyApiService
 import com.cristianwer.pepinillorick.data.remote.dto.CharacterResponseDto
 import com.cristianwer.pepinillorick.data.remote.dto.InfoDto
+import com.cristianwer.pepinillorick.domain.model.Resource
+import com.cristianwer.pepinillorick.domain.model.UiError
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
