@@ -162,22 +162,4 @@ internal class CharacterRepositoryImplTest {
         // Then
         assertTrue(result?.isFavorite == true)
     }
-
-    @Test
-    fun `toggleFavorite should insert in favoriteDao when isFavorite is true`() = runTest {
-        // When
-        repository.toggleFavorite(1, true)
-
-        // Then
-        coVerify { favoriteDao.insertFavorite(any()) }
-    }
-
-    @Test
-    fun `toggleFavorite should delete from favoriteDao when isFavorite is false`() = runTest {
-        // When
-        repository.toggleFavorite(1, false)
-
-        // Then
-        coVerify { favoriteDao.deleteFavorite(any()) }
-    }
 }

@@ -1,6 +1,7 @@
 package com.cristianwer.pepinillorick.domain.usecase
 
-import com.cristianwer.pepinillorick.domain.repository.CharacterRepository
+import com.cristianwer.pepinillorick.domain.model.FavoriteType
+import com.cristianwer.pepinillorick.domain.repository.FavoriteRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -14,7 +15,7 @@ import org.junit.Test
 internal class ToggleFavoriteUseCaseTest {
 
     private lateinit var useCase: ToggleFavoriteUseCase
-    private val repository: CharacterRepository = mockk()
+    private val repository: FavoriteRepository = mockk()
 
     @Before
     fun setUp() {
@@ -22,16 +23,16 @@ internal class ToggleFavoriteUseCaseTest {
     }
 
     @Test
-    fun `invoke should delegate toggle to repository`() = runTest {
+    fun `invoke should delegate toggle to repository with CHARACTER type`() = runTest {
         // Given
         val characterId = 1
         val isFavorite = true
-        coEvery { repository.toggleFavorite(characterId, isFavorite) } returns Unit
+        coEvery { repository.toggleFavorite(characterId, FavoriteType.CHARACTER, isFavorite) } returns Unit
 
         // When
         useCase(characterId, isFavorite)
 
         // Then
-        coVerify(exactly = 1) { repository.toggleFavorite(characterId, isFavorite) }
+        coVerify(exactly = 1) { repository.toggleFavorite(characterId, FavoriteType.CHARACTER, isFavorite) }
     }
 }

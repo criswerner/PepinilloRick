@@ -1,14 +1,18 @@
 package com.cristianwer.pepinillorick.data.local.entity
 
 import androidx.room.Entity
-import androidx.room.PrimaryKey
 
 /**
- * Entity to store character IDs marked as favorite by the user.
+ * Entity to store IDs marked as favorite by the user across different entity types.
  *
- * @property characterId The unique identifier of the favorite character.
+ * @property id The unique identifier of the favorite item.
+ * @property type The type of item (CHARACTER, EPISODE, etc.).
  */
-@Entity(tableName = "favorites")
+@Entity(
+    tableName = "favorites",
+    primaryKeys = ["id", "type"]
+)
 internal data class FavoriteEntity(
-    @PrimaryKey val characterId: Int
+    val id: Int,
+    val type: String
 )

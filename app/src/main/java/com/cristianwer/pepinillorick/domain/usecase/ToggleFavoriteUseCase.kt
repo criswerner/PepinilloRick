@@ -1,23 +1,22 @@
 package com.cristianwer.pepinillorick.domain.usecase
 
-import com.cristianwer.pepinillorick.domain.repository.CharacterRepository
+import com.cristianwer.pepinillorick.domain.model.FavoriteType
+import com.cristianwer.pepinillorick.domain.repository.FavoriteRepository
 import javax.inject.Inject
 
 /**
- * Use case to toggle the favorite status of a Rick & Morty character.
- *
- * @property repository The repository used to update favorite status.
+ * Use case to toggle the favorite status of a character.
  */
 internal class ToggleFavoriteUseCase @Inject constructor(
-    private val repository: CharacterRepository
+    private val favoriteRepository: FavoriteRepository
 ) {
     /**
-     * Executes the use case to toggle a character's favorite status.
+     * Executes the action of marking/unmarking a character as favorite.
      *
      * @param id The unique identifier of the character.
-     * @param isFavorite The new favorite status to set.
+     * @param isFavorite The new favorite status.
      */
     suspend operator fun invoke(id: Int, isFavorite: Boolean) {
-        repository.toggleFavorite(id, isFavorite)
+        favoriteRepository.toggleFavorite(id, FavoriteType.CHARACTER, isFavorite)
     }
 }

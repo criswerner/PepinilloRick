@@ -41,12 +41,4 @@ internal interface CharacterRepository {
      * @return A [Flow] emitting the character if found, null otherwise.
      */
     fun getCharacterByIdFlow(id: Int): Flow<Character?>
-
-    /**
-     * Toggles the favorite status of a character.
-     *
-     * @param id The unique identifier of the character.
-     * @param isFavorite The new favorite status.
-     */
-    suspend fun toggleFavorite(id: Int, isFavorite: Boolean)
 }

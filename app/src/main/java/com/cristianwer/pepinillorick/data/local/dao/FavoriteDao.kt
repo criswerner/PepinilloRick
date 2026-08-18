@@ -9,7 +9,7 @@ import com.cristianwer.pepinillorick.data.local.entity.FavoriteEntity
 import kotlinx.coroutines.flow.Flow
 
 /**
- * DAO for managing user favorites.
+ * DAO for managing user favorites generically.
  */
 @Dao
 internal interface FavoriteDao {
@@ -20,9 +20,9 @@ internal interface FavoriteDao {
     @Delete
     suspend fun deleteFavorite(favorite: FavoriteEntity)
 
-    @Query("SELECT EXISTS(SELECT 1 FROM favorites WHERE characterId = :characterId)")
-    fun isFavoriteFlow(characterId: Int): Flow<Boolean>
+    @Query("SELECT EXISTS(SELECT 1 FROM favorites WHERE id = :id AND type = :type)")
+    fun isFavoriteFlow(id: Int, type: String): Flow<Boolean>
 
-    @Query("SELECT characterId FROM favorites")
-    fun getAllFavoriteIdsFlow(): Flow<List<Int>>
+    @Query("SELECT id FROM favorites WHERE type = :type")
+    fun getFavoriteIdsByTypeFlow(type: String): Flow<List<Int>>
 }
