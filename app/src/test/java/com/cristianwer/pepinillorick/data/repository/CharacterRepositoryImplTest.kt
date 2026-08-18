@@ -113,7 +113,10 @@ internal class CharacterRepositoryImplTest {
         // Given
         val characterId = 1
         val entities = listOf(
-            CharacterEntity(characterId, "Rick", "Alive", "Human", "", "Male", "", "", "", "", "", "")
+            CharacterWithFavoriteEntity(
+                character = CharacterEntity(characterId, "Rick", "Alive", "Human", "", "Male", "", "", "", "", "", ""),
+                isFavorite = true
+            )
         )
         every { characterDao.getFavoriteCharactersFlow() } returns flowOf(entities)
 

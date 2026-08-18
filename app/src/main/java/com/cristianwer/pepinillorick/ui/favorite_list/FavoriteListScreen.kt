@@ -30,8 +30,24 @@ internal fun FavoriteListScreen(
     viewModel: FavoriteListViewModel,
     onCharacterClick: (Int) -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiStateState = viewModel.uiState.collectAsStateWithLifecycle()
+    val onFavoriteToggle: (Int, Boolean) -> Unit = remember(viewModel) {
+        { id, _ -> viewModel.toggleFavorite(id, false) }
+    }
 
+    FavoriteListContent(
+        uiStateProvider = { uiStateState.value },
+        onCharacterClick = onCharacterClick,
+        onFavoriteToggle = onFavoriteToggle
+    )
+}
+
+@Composable
+private fun FavoriteListContent(
+    uiStateProvider: () -> FavoriteListUiState,
+    onCharacterClick: (Int) -> Unit,
+    onFavoriteToggle: (Int, Boolean) -> Unit
+) {
     val colorScheme = MaterialTheme.colorScheme
     val backgroundBrush = remember(colorScheme) {
         Brush.verticalGradient(
@@ -46,7 +62,7 @@ internal fun FavoriteListScreen(
             .fillMaxSize()
             .background(backgroundBrush)
     ) {
-        when (val state = uiState) {
+        when (val state = uiStateProvider()) {
             is FavoriteListUiState.Loading -> {
                 FavoriteLoadingSkeleton()
             }
@@ -69,7 +85,7 @@ internal fun FavoriteListScreen(
                 CharacterList(
                     characters = state.favorites,
                     onCharacterClick = onCharacterClick,
-                    onFavoriteToggle = { id, _ -> viewModel.toggleFavorite(id, false) }
+                    onFavoriteToggle = onFavoriteToggle
                 )
             }
         }

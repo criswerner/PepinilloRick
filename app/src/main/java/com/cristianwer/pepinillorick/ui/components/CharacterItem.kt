@@ -127,9 +127,7 @@ internal fun CharacterItem(
             
             FavoriteButton(
                 isFavorite = character.isFavorite,
-                onFavoriteClick = remember(character.id, character.isFavorite, onFavoriteToggle) {
-                    { onFavoriteToggle(character.id, !character.isFavorite) }
-                },
+                onFavoriteClick = { onFavoriteToggle(character.id, !character.isFavorite) },
                 favoriteColor = colorScheme.primary
             )
         }
