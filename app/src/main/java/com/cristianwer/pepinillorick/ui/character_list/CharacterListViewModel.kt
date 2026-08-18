@@ -3,6 +3,7 @@ package com.cristianwer.pepinillorick.ui.character_list
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cristianwer.pepinillorick.domain.model.Resource
+import com.cristianwer.pepinillorick.domain.model.UiError
 import com.cristianwer.pepinillorick.domain.usecase.GetCharactersUseCase
 import com.cristianwer.pepinillorick.domain.usecase.ToggleFavoriteUseCase
 import com.cristianwer.pepinillorick.ui.model.CharacterUiModel
@@ -28,11 +29,11 @@ import javax.inject.Inject
  */
 internal sealed interface CharacterListUiState {
     data object InitialLoading : CharacterListUiState
-    data class InitialError(val message: String) : CharacterListUiState
+    data class InitialError(val error: UiError) : CharacterListUiState
     data class Success(
         val characters: ImmutableList<CharacterUiModel>,
         val isPaginating: Boolean = false,
-        val paginationError: String? = null
+        val paginationError: UiError? = null
     ) : CharacterListUiState
 }
 
@@ -76,11 +77,11 @@ internal class CharacterListViewModel @Inject constructor(
                 }
                 is Resource.Error -> {
                     if (characters.isEmpty()) {
-                        CharacterListUiState.InitialError(resource.message ?: "Unknown Error")
+                        CharacterListUiState.InitialError(resource.error!!)
                     } else {
                         CharacterListUiState.Success(
                             characters = characters,
-                            paginationError = resource.message
+                            paginationError = resource.error
                         )
                     }
                 }

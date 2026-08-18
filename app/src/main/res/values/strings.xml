@@ -10,6 +10,11 @@
     <string name="character_list_not_favorite">No favorito</string>
     <string name="character_list_go_to_favorites">Ver favoritos</string>
 
+    <!-- Errors -->
+    <string name="error_connection">Sin conexión a internet. Verifica tu red.</string>
+    <string name="error_server">Error en el servidor (%1$d). Inténtalo más tarde.</string>
+    <string name="error_unknown">Algo salió mal. Por favor, reintenta.</string>
+
     <!-- Favorite List Screen -->
     <string name="favorite_list_title">Mis Favoritos</string>
     <string name="favorite_list_empty">Aún no tienes personajes favoritos.</string>

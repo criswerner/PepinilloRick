@@ -8,6 +8,7 @@ import com.cristianwer.pepinillorick.data.local.dao.RemoteKeysDao
 import com.cristianwer.pepinillorick.data.local.database.RickAndMortyDatabase
 import com.cristianwer.pepinillorick.data.local.entity.CharacterEntity
 import com.cristianwer.pepinillorick.domain.model.Resource
+import com.cristianwer.pepinillorick.domain.model.UiError
 import com.cristianwer.pepinillorick.data.remote.RickAndMortyApiService
 import com.cristianwer.pepinillorick.data.remote.dto.CharacterResponseDto
 import com.cristianwer.pepinillorick.data.remote.dto.InfoDto
@@ -55,7 +56,7 @@ internal class CharacterRepositoryImplTest {
     }
 
     @Test
-    fun `getCharacters should combine characters from dao and favorite ids`() = runTest {
+    fun `getCharacters should return characters with favorite status from dao`() = runTest {
         // Given
         val characterId = 1
         val entities = listOf(
@@ -90,6 +91,21 @@ internal class CharacterRepositoryImplTest {
         // Then
         assertTrue(result[0] is Resource.Loading)
         assertTrue(result[1] is Resource.Success)
+    }
+
+    @Test
+    fun `getCharactersWithSync should emit connection error on IOException`() = runTest {
+        // Given
+        every { characterDao.getCharactersWithFavoriteFlow() } returns flowOf(emptyList())
+        coEvery { apiService.getCharacters(any()) } throws IOException()
+
+        // When
+        val result = repository.getCharactersWithSync().take(2).toList()
+
+        // Then
+        assertTrue(result[0] is Resource.Loading)
+        assertTrue(result[1] is Resource.Error)
+        assertEquals(UiError.Connection, (result[1] as Resource.Error).uiError)
     }
 
     @Test

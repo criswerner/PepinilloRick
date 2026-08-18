@@ -2,6 +2,7 @@ package com.cristianwer.pepinillorick.data.repository
 
 import androidx.room.withTransaction
 import com.cristianwer.pepinillorick.data.local.database.RickAndMortyDatabase
+import com.cristianwer.pepinillorick.data.local.entity.CharacterEntity
 import com.cristianwer.pepinillorick.data.local.entity.FavoriteEntity
 import com.cristianwer.pepinillorick.data.local.entity.RemoteKeysEntity
 import com.cristianwer.pepinillorick.data.mapper.toDomain
@@ -9,12 +10,15 @@ import com.cristianwer.pepinillorick.data.mapper.toEntity
 import com.cristianwer.pepinillorick.data.remote.RickAndMortyApiService
 import com.cristianwer.pepinillorick.domain.model.Character
 import com.cristianwer.pepinillorick.domain.model.Resource
+import com.cristianwer.pepinillorick.domain.model.UiError
 import com.cristianwer.pepinillorick.domain.repository.CharacterRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import retrofit2.HttpException
+import java.io.IOException
 import javax.inject.Inject
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -57,21 +61,14 @@ internal class CharacterRepositoryImpl @Inject constructor(
             val isLastPage = response.info.next == null
             val nextPage = if (isLastPage) pageToLoad else pageToLoad + 1
 
-            database.withTransaction {
-                if (forceRefresh) {
-                    database.characterDao.deleteAllCharacters()
-                    database.remoteKeysDao.deleteKey(CHARACTER_REMOTE_KEY_LABEL)
-                }
-
-                database.characterDao.insertCharacters(entities)
-                database.remoteKeysDao.insertKey(
-                    RemoteKeysEntity(CHARACTER_REMOTE_KEY_LABEL, nextPage)
-                )
-            }
+            refreshLocalDatabase(forceRefresh, entities, nextPage)
             emitAll(localDbFlow.map { Resource.Success(it) })
         } catch (e: Exception) {
             if (e is CancellationException) throw e
-            emitAll(localDbFlow.map { Resource.Error(e.message ?: "Unknown error", it) })
+
+            val uiError = getUiError(e)
+
+            emitAll(localDbFlow.map { Resource.Error(uiError, it) })
         }
     }
 
@@ -97,5 +94,33 @@ internal class CharacterRepositoryImpl @Inject constructor(
         } else {
             database.favoriteDao.deleteFavorite(FavoriteEntity(id))
         }
+    }
+
+    private suspend fun refreshLocalDatabase(
+        forceRefresh: Boolean,
+        entities: List<CharacterEntity>,
+        nextPage: Int
+    ) {
+        database.withTransaction {
+            if (forceRefresh) {
+                database.characterDao.deleteAllCharacters()
+                database.remoteKeysDao.deleteKey(CHARACTER_REMOTE_KEY_LABEL)
+            }
+
+            database.characterDao.insertCharacters(entities)
+            database.remoteKeysDao.insertKey(
+                RemoteKeysEntity(CHARACTER_REMOTE_KEY_LABEL, nextPage)
+            )
+        }
+    }
+
+
+    private fun getUiError(e: Exception): UiError {
+        val uiError = when (e) {
+            is IOException -> UiError.Connection
+            is HttpException -> UiError.Server(e.code())
+            else -> UiError.Unknown(e.message)
+        }
+        return uiError
     }
 }
