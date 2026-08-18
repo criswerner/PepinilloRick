@@ -53,7 +53,6 @@ internal class CharacterListViewModel @Inject constructor(
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase
 ) : ViewModel() {
 
-    // Trigger for loading characters, uses an object to ensure distinct values even for the same flag
     private val loadTrigger = MutableStateFlow(LoadEvent(forceRefresh = false))
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -102,7 +101,6 @@ internal class CharacterListViewModel @Inject constructor(
     fun loadCharacters(forceRefresh: Boolean = false) {
         val currentState = uiState.value
         
-        // Prevent concurrent requests unless it's a force refresh or a retry from error
         val isPaginating = currentState is CharacterListUiState.Success && currentState.isPaginating
         val isInitialLoading = currentState is CharacterListUiState.InitialLoading
         

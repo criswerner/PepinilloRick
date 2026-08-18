@@ -133,7 +133,6 @@ private fun CharacterDetailContent(character: CharacterDetailUiModel) {
             .padding(Dimens.spacingMedium),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Character Image with Portal Border
         Box(
             modifier = Modifier
                 .size(Dimens.characterDetailPortalSize)
@@ -279,7 +278,6 @@ private fun DetailItem(
             )
             Spacer(modifier = Modifier.width(Dimens.spacingSmall))
             
-            // Value part takes remaining space and aligns to end
             Row(
                 modifier = Modifier.weight(1f),
                 horizontalArrangement = Arrangement.End,
