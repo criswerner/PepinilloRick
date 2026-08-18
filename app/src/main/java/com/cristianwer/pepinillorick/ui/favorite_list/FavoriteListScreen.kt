@@ -1,20 +1,26 @@
 package com.cristianwer.pepinillorick.ui.favorite_list
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cristianwer.pepinillorick.R
+import com.cristianwer.pepinillorick.ui.components.CharacterItemSkeleton
 import com.cristianwer.pepinillorick.ui.components.CharacterList
-import com.cristianwer.pepinillorick.ui.theme.*
+import com.cristianwer.pepinillorick.ui.theme.Dimens
 
 /**
  * Screen that displays the list of favorite Rick & Morty characters.
@@ -26,24 +32,23 @@ internal fun FavoriteListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    val colorScheme = MaterialTheme.colorScheme
+    val backgroundBrush = remember(colorScheme) {
+        Brush.verticalGradient(
+            colors = listOf(
+                colorScheme.surface,
+                colorScheme.background
+            )
+        )
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        SemiTransparentBlack,
-                        DeepSpace
-                    )
-                )
-            )
+            .background(backgroundBrush)
     ) {
         when (val state = uiState) {
             is FavoriteListUiState.Loading -> {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                    color = RickGreen
-                )
+                FavoriteLoadingSkeleton()
             }
 
             is FavoriteListUiState.Empty -> {
@@ -54,7 +59,7 @@ internal fun FavoriteListScreen(
                     Text(
                         text = stringResource(id = R.string.favorite_list_empty),
                         style = MaterialTheme.typography.bodyLarge,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onBackground,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -67,6 +72,20 @@ internal fun FavoriteListScreen(
                     onFavoriteToggle = { id, _ -> viewModel.toggleFavorite(id, false) }
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun FavoriteLoadingSkeleton() {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(Dimens.spacingMedium),
+        verticalArrangement = Arrangement.spacedBy(Dimens.spacingMedium),
+        userScrollEnabled = false
+    ) {
+        items(8) {
+            CharacterItemSkeleton()
         }
     }
 }

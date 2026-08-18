@@ -31,7 +31,7 @@ internal class CharacterUiMapperTest {
 
         assertEquals(domain.id, uiModel.id)
         assertEquals(domain.name, uiModel.name)
-        assertEquals("Alive", uiModel.status)
+        assertEquals(CharacterStatus.ALIVE, uiModel.status)
         assertEquals("Space C-137", uiModel.locationName)
     }
 
@@ -54,7 +54,7 @@ internal class CharacterUiMapperTest {
 
         assertEquals(domain.id, detailUiModel.id)
         assertEquals(domain.name, detailUiModel.name)
-        assertEquals("Male", detailUiModel.gender)
+        assertEquals(CharacterGender.MALE, detailUiModel.gender)
         assertEquals("Earth", detailUiModel.originName)
         assertEquals(3, detailUiModel.episodeCount)
     }

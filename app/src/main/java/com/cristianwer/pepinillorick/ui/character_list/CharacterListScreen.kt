@@ -4,15 +4,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,12 +28,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cristianwer.pepinillorick.R
 import com.cristianwer.pepinillorick.domain.model.UiError
+import com.cristianwer.pepinillorick.ui.components.CharacterItemSkeleton
 import com.cristianwer.pepinillorick.ui.components.CharacterList
 import com.cristianwer.pepinillorick.ui.mapper.asString
-import com.cristianwer.pepinillorick.ui.theme.DeepSpace
 import com.cristianwer.pepinillorick.ui.theme.Dimens
-import com.cristianwer.pepinillorick.ui.theme.RickGreen
-import com.cristianwer.pepinillorick.ui.theme.SemiTransparentBlack
 
 @Composable
 internal fun CharacterListScreen(
@@ -51,9 +49,13 @@ internal fun CharacterListScreen(
         { viewModel.loadCharacters() }
     }
 
-    val backgroundBrush = remember {
+    val colorScheme = MaterialTheme.colorScheme
+    val backgroundBrush = remember(colorScheme) {
         Brush.verticalGradient(
-            colors = listOf(SemiTransparentBlack, DeepSpace)
+            colors = listOf(
+                colorScheme.surface,
+                colorScheme.background
+            )
         )
     }
     Box(
@@ -63,11 +65,10 @@ internal fun CharacterListScreen(
     ) {
         when (val state = uiState) {
             is CharacterListUiState.InitialLoading -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(Dimens.loadingIndicatorSize),
-                        color = RickGreen
-                    )
+                InitialLoadingSkeleton()
+                // Auto-trigger load on first entry if empty
+                LaunchedEffect(Unit) {
+                    viewModel.loadCharacters()
                 }
             }
             
@@ -105,6 +106,20 @@ internal fun CharacterListScreen(
 }
 
 @Composable
+private fun InitialLoadingSkeleton() {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(Dimens.spacingMedium),
+        verticalArrangement = Arrangement.spacedBy(Dimens.spacingMedium),
+        userScrollEnabled = false
+    ) {
+        items(8) {
+            CharacterItemSkeleton()
+        }
+    }
+}
+
+@Composable
 private fun FullScreenError(error: UiError, onRetry: () -> Unit) {
     Column(
         modifier = Modifier
@@ -122,9 +137,12 @@ private fun FullScreenError(error: UiError, onRetry: () -> Unit) {
         Spacer(modifier = Modifier.height(Dimens.spacingMedium))
         Button(
             onClick = onRetry,
-            colors = ButtonDefaults.buttonColors(containerColor = RickGreen)
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
         ) {
-            Text(text = stringResource(id = R.string.character_list_retry), color = DeepSpace)
+            Text(
+                text = stringResource(id = R.string.character_list_retry),
+                color = MaterialTheme.colorScheme.onPrimary
+            )
         }
     }
 }

@@ -74,7 +74,7 @@ internal class CharacterRepositoryImpl @Inject constructor(
 
     override fun getFavoriteCharacters(): Flow<List<Character>> {
         return database.characterDao.getFavoriteCharactersFlow().map { entities ->
-            entities.map { it.toDomain().copy(isFavorite = true) }
+            entities.map { it.toDomain() }
         }
     }
 
@@ -116,11 +116,10 @@ internal class CharacterRepositoryImpl @Inject constructor(
 
 
     private fun getUiError(e: Exception): UiError {
-        val uiError = when (e) {
+        return when (e) {
             is IOException -> UiError.Connection
             is HttpException -> UiError.Server(e.code())
             else -> UiError.Unknown(e.message)
         }
-        return uiError
     }
 }

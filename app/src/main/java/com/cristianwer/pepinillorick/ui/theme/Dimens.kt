@@ -15,6 +15,7 @@ internal object Dimens {
     val spacingExtraLarge = 32.dp
 
     // Corner Radii
+    val cornerRadiusExtraSmall = 4.dp
     val cornerRadiusSmall = 8.dp
     val cornerRadiusMedium = 12.dp
     val cornerRadiusLarge = 16.dp

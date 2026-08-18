@@ -1,6 +1,7 @@
 package com.cristianwer.pepinillorick.data.local.dao
 
 import androidx.room.Dao
+import androidx.room.DatabaseView
 import androidx.room.Embedded
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -9,8 +10,14 @@ import com.cristianwer.pepinillorick.data.local.entity.CharacterEntity
 import kotlinx.coroutines.flow.Flow
 
 /**
- * POJO to represent a character combined with its favorite status from the database.
+ * A Database View that combines characters with their favorite status.
+ * This centralizes the JOIN logic and makes DAO queries cleaner.
  */
+@DatabaseView("""
+    SELECT *, 
+    EXISTS(SELECT 1 FROM favorites WHERE favorites.characterId = characters.id) AS isFavorite 
+    FROM characters
+""")
 internal data class CharacterWithFavoriteEntity(
     @Embedded val character: CharacterEntity,
     val isFavorite: Boolean
@@ -19,29 +26,17 @@ internal data class CharacterWithFavoriteEntity(
 @Dao
 internal interface CharacterDao {
 
-    @Query("""
-        SELECT *, 
-        EXISTS(SELECT 1 FROM favorites WHERE favorites.characterId = characters.id) AS isFavorite 
-        FROM characters
-    """)
+    @Query("SELECT * FROM CharacterWithFavoriteEntity")
     fun getCharactersWithFavoriteFlow(): Flow<List<CharacterWithFavoriteEntity>>
 
-    @Query("""
-        SELECT *, 
-        EXISTS(SELECT 1 FROM favorites WHERE favorites.characterId = characters.id) AS isFavorite 
-        FROM characters WHERE id = :id
-    """)
+    @Query("SELECT * FROM CharacterWithFavoriteEntity WHERE id = :id")
     suspend fun getCharacterWithFavoriteById(id: Int): CharacterWithFavoriteEntity?
 
-    @Query("""
-        SELECT *, 
-        EXISTS(SELECT 1 FROM favorites WHERE favorites.characterId = characters.id) AS isFavorite 
-        FROM characters WHERE id = :id
-    """)
+    @Query("SELECT * FROM CharacterWithFavoriteEntity WHERE id = :id")
     fun getCharacterWithFavoriteByIdFlow(id: Int): Flow<CharacterWithFavoriteEntity?>
 
-    @Query("SELECT characters.* FROM characters INNER JOIN favorites ON characters.id = favorites.characterId")
-    fun getFavoriteCharactersFlow(): Flow<List<CharacterEntity>>
+    @Query("SELECT * FROM CharacterWithFavoriteEntity WHERE isFavorite = 1")
+    fun getFavoriteCharactersFlow(): Flow<List<CharacterWithFavoriteEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCharacters(characters: List<CharacterEntity>)

@@ -4,8 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
@@ -13,9 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -28,12 +28,8 @@ import com.cristianwer.pepinillorick.ui.character_list.CharacterListScreen
 import com.cristianwer.pepinillorick.ui.favorite_list.FavoriteListScreen
 import com.cristianwer.pepinillorick.ui.navigation.BottomNavItem
 import com.cristianwer.pepinillorick.ui.theme.PepinilloRickTheme
-import com.cristianwer.pepinillorick.ui.theme.TranslucentBlack
 import dagger.hilt.android.AndroidEntryPoint
 
-/**
- * Main activity of the application.
- */
 @AndroidEntryPoint
 internal class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,75 +44,87 @@ internal class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun RickAndMortyApp() {
+    val navController = rememberNavController()
+
+    NavHost(
+        navController = navController,
+        startDestination = "main_tabs",
+        modifier = Modifier.fillMaxSize(),
+        enterTransition = { fadeIn(animationSpec = tween(500)) },
+        exitTransition = { fadeOut(animationSpec = tween(500)) },
+        popEnterTransition = { fadeIn(animationSpec = tween(500)) },
+        popExitTransition = { fadeOut(animationSpec = tween(500)) }
+    ) {
+        composable("main_tabs") {
+            MainNavScreen(
+                onCharacterClick = { id -> navController.navigate("character_detail/$id") }
+            )
+        }
+        composable(
+            route = "character_detail/{characterId}",
+            arguments = listOf(navArgument("characterId") { type = NavType.IntType })
+        ) {
+            CharacterDetailScreen(
+                viewModel = hiltViewModel(),
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MainNavScreen(onCharacterClick: (Int) -> Unit) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    val items = remember {
-        listOf(
-            BottomNavItem.Characters,
-            BottomNavItem.Favorites
-        )
-    }
-
-    // Only show activity bars if we are explicitly on a top-level bottom nav route.
-    val currentBottomNavItem = items.find { it.route == currentDestination?.route }
-    val showActivityBars = currentBottomNavItem != null
-
-    // Stable navigation lambda
-    val onCharacterClick = remember(navController) {
-        { id: Int -> navController.navigate("character_detail/$id") }
-    }
+    val items = remember { listOf(BottomNavItem.Characters, BottomNavItem.Favorites) }
+    val currentNavItem = items.find { it.route == currentDestination?.route } ?: BottomNavItem.Characters
+    val colorScheme = MaterialTheme.colorScheme
 
     Scaffold(
         topBar = {
-            if (showActivityBars) {
-                TopAppBar(
-                    title = { Text(text = stringResource(id = currentBottomNavItem.titleRes)) },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = TranslucentBlack,
-                        titleContentColor = Color.White
-                    )
+            TopAppBar(
+                title = { Text(text = stringResource(id = currentNavItem.titleRes)) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = colorScheme.surface.copy(alpha = 0.5f),
+                    titleContentColor = colorScheme.onSurface
                 )
-            }
+            )
         },
         bottomBar = {
-            if (showActivityBars) {
-                NavigationBar {
-                    items.forEach { item ->
-                        val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
-                        NavigationBarItem(
-                            icon = { Icon(item.icon, contentDescription = null) },
-                            label = { Text(stringResource(item.titleRes)) },
-                            selected = selected,
-                            onClick = {
-                                if (currentDestination?.route != item.route) {
-                                    navController.navigate(item.route) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
+            NavigationBar {
+                items.forEach { item ->
+                    val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
+                    NavigationBarItem(
+                        icon = { Icon(item.icon, contentDescription = null) },
+                        label = { Text(stringResource(item.titleRes)) },
+                        selected = selected,
+                        onClick = {
+                            if (currentDestination?.route != item.route) {
+                                navController.navigate(item.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
                                     }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
                             }
-                        )
-                    }
+                        }
+                    )
                 }
             }
         }
     ) { innerPadding ->
-        // When not showing activity bars, we provide 0 padding to the content 
-        // so the detail screen can use the full screen area correctly.
-        val contentPadding = if (showActivityBars) innerPadding else PaddingValues(all = 0.dp)
-        
-        Box(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
+        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
             NavHost(
                 navController = navController,
-                startDestination = BottomNavItem.Characters.route
+                startDestination = BottomNavItem.Characters.route,
+                enterTransition = { fadeIn() }, 
+                exitTransition = { fadeOut() }
             ) {
                 composable(BottomNavItem.Characters.route) {
                     CharacterListScreen(
@@ -128,17 +136,6 @@ private fun RickAndMortyApp() {
                     FavoriteListScreen(
                         viewModel = hiltViewModel(),
                         onCharacterClick = onCharacterClick
-                    )
-                }
-                composable(
-                    route = "character_detail/{characterId}",
-                    arguments = listOf(
-                        navArgument("characterId") { type = NavType.IntType }
-                    )
-                ) {
-                    CharacterDetailScreen(
-                        viewModel = hiltViewModel(),
-                        onBackClick = { navController.popBackStack() }
                     )
                 }
             }
