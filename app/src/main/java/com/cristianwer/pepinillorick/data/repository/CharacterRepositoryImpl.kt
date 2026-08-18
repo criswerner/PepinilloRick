@@ -3,7 +3,6 @@ package com.cristianwer.pepinillorick.data.repository
 import androidx.room.withTransaction
 import com.cristianwer.pepinillorick.data.local.database.RickAndMortyDatabase
 import com.cristianwer.pepinillorick.data.local.entity.CharacterEntity
-import com.cristianwer.pepinillorick.data.local.entity.FavoriteEntity
 import com.cristianwer.pepinillorick.data.local.entity.RemoteKeysEntity
 import com.cristianwer.pepinillorick.data.mapper.toDomain
 import com.cristianwer.pepinillorick.data.mapper.toEntity
@@ -24,9 +23,6 @@ import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * Implementation of [CharacterRepository] using Room as a single source of truth.
- *
- * This implementation manages synchronization and local storage manually,
- * keeping track of pagination state via a remote keys table.
  */
 internal class CharacterRepositoryImpl @Inject constructor(
     private val apiService: RickAndMortyApiService,
@@ -88,14 +84,6 @@ internal class CharacterRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun toggleFavorite(id: Int, isFavorite: Boolean) {
-        if (isFavorite) {
-            database.favoriteDao.insertFavorite(FavoriteEntity(id))
-        } else {
-            database.favoriteDao.deleteFavorite(FavoriteEntity(id))
-        }
-    }
-
     private suspend fun refreshLocalDatabase(
         forceRefresh: Boolean,
         entities: List<CharacterEntity>,
@@ -113,7 +101,6 @@ internal class CharacterRepositoryImpl @Inject constructor(
             )
         }
     }
-
 
     private fun getUiError(e: Exception): UiError {
         return when (e) {

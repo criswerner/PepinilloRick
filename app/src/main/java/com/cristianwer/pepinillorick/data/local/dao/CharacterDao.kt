@@ -11,11 +11,11 @@ import kotlinx.coroutines.flow.Flow
 
 /**
  * A Database View that combines characters with their favorite status.
- * This centralizes the JOIN logic and makes DAO queries cleaner.
+ * It filters by the 'CHARACTER' type to ensure data integrity.
  */
 @DatabaseView("""
     SELECT *, 
-    EXISTS(SELECT 1 FROM favorites WHERE favorites.characterId = characters.id) AS isFavorite 
+    EXISTS(SELECT 1 FROM favorites WHERE favorites.id = characters.id AND favorites.type = 'CHARACTER') AS isFavorite
     FROM characters
 """)
 internal data class CharacterWithFavoriteEntity(

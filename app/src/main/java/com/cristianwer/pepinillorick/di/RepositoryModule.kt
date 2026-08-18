@@ -1,7 +1,9 @@
 package com.cristianwer.pepinillorick.di
 
 import com.cristianwer.pepinillorick.data.repository.CharacterRepositoryImpl
+import com.cristianwer.pepinillorick.data.repository.FavoriteRepositoryImpl
 import com.cristianwer.pepinillorick.domain.repository.CharacterRepository
+import com.cristianwer.pepinillorick.domain.repository.FavoriteRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -17,4 +19,10 @@ internal abstract class RepositoryModule {
     abstract fun bindCharacterRepository(
         characterRepositoryImpl: CharacterRepositoryImpl
     ): CharacterRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindFavoriteRepository(
+        favoriteRepositoryImpl: FavoriteRepositoryImpl
+    ): FavoriteRepository
 }

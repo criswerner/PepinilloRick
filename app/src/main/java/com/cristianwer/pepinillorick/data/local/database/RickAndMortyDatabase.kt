@@ -13,7 +13,7 @@ import com.cristianwer.pepinillorick.data.local.entity.RemoteKeysEntity
 @Database(
     entities = [CharacterEntity::class, RemoteKeysEntity::class, FavoriteEntity::class],
     views = [CharacterWithFavoriteEntity::class],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 internal abstract class RickAndMortyDatabase : RoomDatabase() {
