@@ -66,7 +66,7 @@ internal fun CharacterListScreen(
         when (val state = uiState) {
             is CharacterListUiState.InitialLoading -> {
                 InitialLoadingSkeleton()
-                // Auto-trigger load on first entry if empty
+
                 LaunchedEffect(Unit) {
                     viewModel.loadCharacters()
                 }
