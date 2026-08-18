@@ -1,25 +1,13 @@
 package com.cristianwer.pepinillorick.ui.character_list
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -28,18 +16,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cristianwer.pepinillorick.R
 import com.cristianwer.pepinillorick.domain.model.UiError
-import com.cristianwer.pepinillorick.ui.components.CharacterItemSkeleton
 import com.cristianwer.pepinillorick.ui.components.CharacterList
+import com.cristianwer.pepinillorick.ui.components.CharacterListSkeleton
 import com.cristianwer.pepinillorick.ui.mapper.asString
 import com.cristianwer.pepinillorick.ui.theme.Dimens
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 
 @Composable
 internal fun CharacterListScreen(
     viewModel: CharacterListViewModel,
     onCharacterClick: (Int) -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val listState = rememberLazyListState()
+    val uiStateState = viewModel.uiState.collectAsStateWithLifecycle()
 
     val onFavoriteToggle: (Int, Boolean) -> Unit = remember(viewModel) {
         { id, isFavorite -> viewModel.toggleFavorite(id, isFavorite) }
@@ -49,6 +38,28 @@ internal fun CharacterListScreen(
         { viewModel.loadCharacters() }
     }
 
+    val onLoadMore = remember(viewModel) {
+        { viewModel.loadCharacters() }
+    }
+
+    CharacterListContent(
+        uiStateProvider = { uiStateState.value },
+        onCharacterClick = onCharacterClick,
+        onFavoriteToggle = onFavoriteToggle,
+        onRetry = onRetry,
+        onLoadMore = onLoadMore
+    )
+}
+
+@Composable
+private fun CharacterListContent(
+    uiStateProvider: () -> CharacterListUiState,
+    onCharacterClick: (Int) -> Unit,
+    onFavoriteToggle: (Int, Boolean) -> Unit,
+    onRetry: () -> Unit,
+    onLoadMore: () -> Unit
+) {
+    val listState = rememberLazyListState()
     val colorScheme = MaterialTheme.colorScheme
     val backgroundBrush = remember(colorScheme) {
         Brush.verticalGradient(
@@ -58,17 +69,18 @@ internal fun CharacterListScreen(
             )
         )
     }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(backgroundBrush)
     ) {
-        when (val state = uiState) {
+        when (val state = uiStateProvider()) {
             is CharacterListUiState.InitialLoading -> {
-                InitialLoadingSkeleton()
+                CharacterListSkeleton()
 
                 LaunchedEffect(Unit) {
-                    viewModel.loadCharacters()
+                    onRetry()
                 }
             }
             
@@ -77,18 +89,17 @@ internal fun CharacterListScreen(
             }
             
             is CharacterListUiState.Success -> {
-                val shouldLoadMore = remember {
-                    derivedStateOf {
+                LaunchedEffect(listState, state.isPaginating) {
+                    snapshotFlow {
                         val totalItems = listState.layoutInfo.totalItemsCount
                         val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()
                         lastVisibleItem != null && lastVisibleItem.index >= totalItems - 1
                     }
-                }
-
-                LaunchedEffect(shouldLoadMore.value) {
-                    if (shouldLoadMore.value && !state.isPaginating) {
-                        viewModel.loadCharacters()
-                    }
+                        .distinctUntilChanged()
+                        .filter { it && !state.isPaginating }
+                        .collect {
+                            onLoadMore()
+                        }
                 }
 
                 CharacterList(
@@ -101,20 +112,6 @@ internal fun CharacterListScreen(
                     onRetry = onRetry
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun InitialLoadingSkeleton() {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(Dimens.spacingMedium),
-        verticalArrangement = Arrangement.spacedBy(Dimens.spacingMedium),
-        userScrollEnabled = false
-    ) {
-        items(8) {
-            CharacterItemSkeleton()
         }
     }
 }
