@@ -5,6 +5,7 @@ import com.cristianwer.pepinillorick.domain.model.CharacterGender
 import com.cristianwer.pepinillorick.domain.model.CharacterStatus
 import com.cristianwer.pepinillorick.domain.model.Location
 import com.cristianwer.pepinillorick.domain.model.Resource
+import com.cristianwer.pepinillorick.domain.model.UiError
 import com.cristianwer.pepinillorick.domain.usecase.GetCharactersUseCase
 import com.cristianwer.pepinillorick.domain.usecase.ToggleFavoriteUseCase
 import io.mockk.coEvery
@@ -110,16 +111,15 @@ internal class CharacterListViewModelTest {
     fun `loadCharacters should result in InitialError when DB is empty and sync fails`() = runTest {
         // Given: Empty DB
         charactersFlow.value = Resource.Loading()
-        val errorMessage = "Network Error"
         
         // When
         viewModel.loadCharacters()
-        charactersFlow.value = Resource.Error(errorMessage)
+        charactersFlow.value = Resource.Error(UiError.Connection)
 
         // Then: Wait for error state
         val state = viewModel.uiState.first { it is CharacterListUiState.InitialError }
         assertTrue(state is CharacterListUiState.InitialError)
-        assertEquals(errorMessage, (state as CharacterListUiState.InitialError).message)
+        assertTrue((state as CharacterListUiState.InitialError).error is UiError.Connection)
     }
 
     @Test

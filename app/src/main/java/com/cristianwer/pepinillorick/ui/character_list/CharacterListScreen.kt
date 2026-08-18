@@ -27,7 +27,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cristianwer.pepinillorick.R
+import com.cristianwer.pepinillorick.domain.model.UiError
 import com.cristianwer.pepinillorick.ui.components.CharacterList
+import com.cristianwer.pepinillorick.ui.mapper.asString
 import com.cristianwer.pepinillorick.ui.theme.DeepSpace
 import com.cristianwer.pepinillorick.ui.theme.Dimens
 import com.cristianwer.pepinillorick.ui.theme.RickGreen
@@ -67,11 +69,10 @@ internal fun CharacterListScreen(
                         color = RickGreen
                     )
                 }
-                LaunchedEffect(Unit) { viewModel.loadCharacters() }
             }
             
             is CharacterListUiState.InitialError -> {
-                FullScreenError(onRetry = onRetry)
+                FullScreenError(error = state.error, onRetry = onRetry)
             }
             
             is CharacterListUiState.Success -> {
@@ -104,7 +105,7 @@ internal fun CharacterListScreen(
 }
 
 @Composable
-private fun FullScreenError(onRetry: () -> Unit) {
+private fun FullScreenError(error: UiError, onRetry: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -113,7 +114,7 @@ private fun FullScreenError(onRetry: () -> Unit) {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = stringResource(id = R.string.character_list_error),
+            text = error.asString(),
             color = MaterialTheme.colorScheme.error,
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center

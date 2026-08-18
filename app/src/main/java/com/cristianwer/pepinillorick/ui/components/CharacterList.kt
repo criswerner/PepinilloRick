@@ -11,6 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.cristianwer.pepinillorick.R
+import com.cristianwer.pepinillorick.domain.model.UiError
+import com.cristianwer.pepinillorick.ui.mapper.asString
 import com.cristianwer.pepinillorick.ui.model.CharacterUiModel
 import com.cristianwer.pepinillorick.ui.theme.Dimens
 import kotlinx.collections.immutable.ImmutableList
@@ -36,7 +38,7 @@ internal fun CharacterList(
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState(),
     isPaginating: Boolean = false,
-    paginationError: String? = null,
+    paginationError: UiError? = null,
     onRetry: () -> Unit = {}
 ) {
     LazyColumn(
@@ -70,20 +72,20 @@ internal fun CharacterList(
 
         if (paginationError != null) {
             item {
-                ErrorItem(onRetry = onRetry)
+                ErrorItem(error = paginationError, onRetry = onRetry)
             }
         }
     }
 }
 
 @Composable
-private fun ErrorItem(onRetry: () -> Unit) {
+private fun ErrorItem(error: UiError, onRetry: () -> Unit) {
     Column(
         modifier = Modifier.fillMaxWidth().padding(Dimens.spacingMedium),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = stringResource(id = R.string.character_list_error),
+            text = error.asString(),
             color = MaterialTheme.colorScheme.error
         )
         Button(onClick = onRetry) {
