@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.cristianwer.pepinillorick.R
+import com.cristianwer.pepinillorick.ui.mapper.getColor
 import com.cristianwer.pepinillorick.ui.model.CharacterUiModel
 import com.cristianwer.pepinillorick.ui.theme.*
 
@@ -103,9 +104,9 @@ internal fun CharacterItem(
                     color = colorScheme.onSurface
                 )
                 Text(
-                    text = "${character.species} - ${character.status}",
+                    text = "${character.species} - ${character.status.value}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = if (character.status == "Alive") colorScheme.primary else colorScheme.onSurfaceVariant
+                    color = character.status.getColor(colorScheme)
                 )
                 
                 Spacer(modifier = Modifier.height(Dimens.spacingSmall))
@@ -129,7 +130,7 @@ internal fun CharacterItem(
                 onFavoriteClick = remember(character.id, character.isFavorite, onFavoriteToggle) {
                     { onFavoriteToggle(character.id, !character.isFavorite) }
                 },
-                favoriteColor = colorScheme.primary // Use theme primary (darker in light mode)
+                favoriteColor = colorScheme.primary
             )
         }
     }

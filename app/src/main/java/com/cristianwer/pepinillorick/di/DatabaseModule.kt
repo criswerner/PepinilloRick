@@ -25,7 +25,7 @@ internal object DatabaseModule {
             RickAndMortyDatabase::class.java,
             RickAndMortyDatabase.DATABASE_NAME
         )
-            .fallbackToDestructiveMigration()
+            .fallbackToDestructiveMigration(false)
             .build()
     }
 

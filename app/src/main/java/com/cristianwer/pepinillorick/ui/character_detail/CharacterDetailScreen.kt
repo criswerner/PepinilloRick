@@ -2,44 +2,15 @@ package com.cristianwer.pepinillorick.ui.character_detail
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Female
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Male
-import androidx.compose.material.icons.filled.Movie
-import androidx.compose.material.icons.filled.Science
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Transgender
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -59,10 +30,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cristianwer.pepinillorick.R
 import com.cristianwer.pepinillorick.ui.components.CustomAsyncImage
 import com.cristianwer.pepinillorick.ui.components.FavoriteButton
+import com.cristianwer.pepinillorick.ui.mapper.getColor
+import com.cristianwer.pepinillorick.ui.mapper.getIcon
 import com.cristianwer.pepinillorick.ui.model.CharacterDetailUiModel
-import com.cristianwer.pepinillorick.ui.theme.Dimens
-import com.cristianwer.pepinillorick.ui.theme.PortalGreenDark
-import com.cristianwer.pepinillorick.ui.theme.PortalGreenLight
+import com.cristianwer.pepinillorick.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -237,8 +208,8 @@ private fun DetailCardCharacter(character: CharacterDetailUiModel) {
     DetailItem(
         icon = Icons.Default.Favorite,
         label = stringResource(id = R.string.character_detail_status).uppercase(),
-        value = character.status,
-        valueColor = if (character.status == "Alive") colorScheme.primary else colorScheme.error
+        value = character.status.value,
+        valueColor = character.status.getColor(colorScheme)
     )
     DetailItem(
         icon = Icons.Default.Science,
@@ -246,13 +217,9 @@ private fun DetailCardCharacter(character: CharacterDetailUiModel) {
         value = character.species
     )
     DetailItem(
-        icon = when (character.gender) {
-            "Male" -> Icons.Default.Male
-            "Female" -> Icons.Default.Female
-            else -> Icons.Default.Transgender
-        },
+        icon = character.gender.getIcon(),
         label = stringResource(id = R.string.character_detail_gender).uppercase(),
-        value = character.gender
+        value = character.gender.value
     )
     DetailItem(
         icon = Icons.Default.AutoAwesome,
