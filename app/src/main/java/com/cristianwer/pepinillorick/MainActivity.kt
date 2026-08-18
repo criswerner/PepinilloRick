@@ -4,6 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -116,7 +119,11 @@ private fun RickAndMortyApp() {
         Box(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
             NavHost(
                 navController = navController,
-                startDestination = BottomNavItem.Characters.route
+                startDestination = BottomNavItem.Characters.route,
+                enterTransition = { fadeIn(animationSpec = tween(500)) },
+                exitTransition = { fadeOut(animationSpec = tween(500)) },
+                popEnterTransition = { fadeIn(animationSpec = tween(500)) },
+                popExitTransition = { fadeOut(animationSpec = tween(500)) }
             ) {
                 composable(BottomNavItem.Characters.route) {
                     CharacterListScreen(

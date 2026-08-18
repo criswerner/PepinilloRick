@@ -164,7 +164,6 @@ private fun CharacterDetailContent(character: CharacterDetailUiModel) {
             .padding(Dimens.spacingMedium),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Character Image with Portal Border
         Box(
             modifier = Modifier
                 .size(Dimens.characterDetailPortalSize)
@@ -201,67 +200,75 @@ private fun CharacterDetailContent(character: CharacterDetailUiModel) {
 
         Spacer(modifier = Modifier.height(Dimens.spacingLarge))
 
-        // Character Name with Glow
-        Text(
-            text = character.name.uppercase(),
-            style = MaterialTheme.typography.headlineMedium.copy(
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = Dimens.textLetterSpacing,
-                shadow = shadow(color = RickGreen, blurRadius = 10f)
-            ),
-            color = Color.White,
-            textAlign = TextAlign.Center
-        )
-
-        Text(
-            text = "${character.species}, ${character.locationName}",
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.Gray,
-            textAlign = TextAlign.Center
-        )
+        NameWithGlowCharacter(character)
 
         Spacer(modifier = Modifier.height(Dimens.spacingExtraLarge))
 
-        // Detail Cards
-        DetailItem(
-            icon = Icons.Default.Favorite,
-            label = stringResource(id = R.string.character_detail_status).uppercase(),
-            value = character.status,
-            valueColor = if (character.status == "Alive") RickGreen else Color.Red
-        )
-        DetailItem(
-            icon = Icons.Default.Science,
-            label = stringResource(id = R.string.character_detail_species).uppercase(),
-            value = character.species
-        )
-        DetailItem(
-            icon = when (character.gender) {
-                "Male" -> Icons.Default.Male
-                "Female" -> Icons.Default.Female
-                else -> Icons.Default.Transgender
-            },
-            label = stringResource(id = R.string.character_detail_gender).uppercase(),
-            value = character.gender
-        )
-        DetailItem(
-            icon = Icons.Default.AutoAwesome,
-            label = stringResource(id = R.string.character_detail_origin).uppercase(),
-            value = character.originName
-        )
-        DetailItem(
-            icon = Icons.Default.LocationOn,
-            label = stringResource(id = R.string.character_detail_location).uppercase(),
-            value = character.locationName
-        )
-        DetailItem(
-            icon = Icons.Default.Movie,
-            label = stringResource(id = R.string.character_detail_episodes).uppercase(),
-            value = character.episodeCount.toString(),
-            showStar = true
-        )
+        DetailCardCharacter(character)
 
         Spacer(modifier = Modifier.height(Dimens.spacingExtraLarge))
     }
+}
+
+@Composable
+private fun NameWithGlowCharacter(character: CharacterDetailUiModel) {
+    Text(
+        text = character.name.uppercase(),
+        style = MaterialTheme.typography.headlineMedium.copy(
+            fontWeight = FontWeight.ExtraBold,
+            letterSpacing = Dimens.textLetterSpacing,
+            shadow = shadow(color = RickGreen, blurRadius = 10f)
+        ),
+        color = Color.White,
+        textAlign = TextAlign.Center
+    )
+
+    Text(
+        text = "${character.species}, ${character.locationName}",
+        style = MaterialTheme.typography.bodyMedium,
+        color = Color.Gray,
+        textAlign = TextAlign.Center
+    )
+}
+
+@Composable
+private fun DetailCardCharacter(character: CharacterDetailUiModel) {
+    DetailItem(
+        icon = Icons.Default.Favorite,
+        label = stringResource(id = R.string.character_detail_status).uppercase(),
+        value = character.status,
+        valueColor = if (character.status == "Alive") RickGreen else Color.Red
+    )
+    DetailItem(
+        icon = Icons.Default.Science,
+        label = stringResource(id = R.string.character_detail_species).uppercase(),
+        value = character.species
+    )
+    DetailItem(
+        icon = when (character.gender) {
+            "Male" -> Icons.Default.Male
+            "Female" -> Icons.Default.Female
+            else -> Icons.Default.Transgender
+        },
+        label = stringResource(id = R.string.character_detail_gender).uppercase(),
+        value = character.gender
+    )
+    DetailItem(
+        icon = Icons.Default.AutoAwesome,
+        label = stringResource(id = R.string.character_detail_origin).uppercase(),
+        value = character.originName
+    )
+    DetailItem(
+        icon = Icons.Default.LocationOn,
+        label = stringResource(id = R.string.character_detail_location).uppercase(),
+        value = character.locationName
+    )
+    DetailItem(
+        icon = Icons.Default.Movie,
+        label = stringResource(id = R.string.character_detail_episodes).uppercase(),
+        value = character.episodeCount.toString(),
+        showStar = true
+    )
 }
 
 @Composable
@@ -303,7 +310,6 @@ private fun DetailItem(
             )
             Spacer(modifier = Modifier.width(Dimens.spacingSmall))
             
-            // Value part takes remaining space and aligns to end
             Row(
                 modifier = Modifier.weight(1f),
                 horizontalArrangement = Arrangement.End,

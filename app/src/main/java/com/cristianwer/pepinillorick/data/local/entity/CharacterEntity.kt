@@ -16,6 +16,5 @@ internal data class CharacterEntity(
     val locationName: String,
     val locationUrl: String,
     val imageUrl: String,
-    // Note: Store as a comma-separated string or use a TypeConverter for List<String>
-    val episodes: String 
+    val episodes: String
 )
