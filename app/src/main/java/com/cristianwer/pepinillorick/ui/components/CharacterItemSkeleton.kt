@@ -1,14 +1,7 @@
 package com.cristianwer.pepinillorick.ui.components
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -21,7 +14,33 @@ import androidx.compose.ui.unit.dp
 import com.cristianwer.pepinillorick.ui.theme.Dimens
 
 /**
- * A skeleton loader representing a character item.
+ * A skeleton loader that displays a list of character item placeholders.
+ * Use this for initial loading states on lists.
+ *
+ * @param modifier The modifier to be applied to the list.
+ * @param itemCount Number of skeleton items to display.
+ */
+@Composable
+internal fun CharacterListSkeleton(
+    modifier: Modifier = Modifier,
+    itemCount: Int = 8
+) {
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(Dimens.spacingMedium),
+        verticalArrangement = Arrangement.spacedBy(Dimens.spacingMedium),
+        userScrollEnabled = false
+    ) {
+        items(itemCount) {
+            CharacterItemSkeleton()
+        }
+    }
+}
+
+/**
+ * A skeleton loader representing a single character item card.
+ *
+ * @param modifier The modifier to be applied to the card.
  */
 @Composable
 internal fun CharacterItemSkeleton(

@@ -1,20 +1,9 @@
 package com.cristianwer.pepinillorick.ui.character_list
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -27,8 +16,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cristianwer.pepinillorick.R
 import com.cristianwer.pepinillorick.domain.model.UiError
-import com.cristianwer.pepinillorick.ui.components.CharacterItemSkeleton
 import com.cristianwer.pepinillorick.ui.components.CharacterList
+import com.cristianwer.pepinillorick.ui.components.CharacterListSkeleton
 import com.cristianwer.pepinillorick.ui.mapper.asString
 import com.cristianwer.pepinillorick.ui.theme.Dimens
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -88,7 +77,7 @@ private fun CharacterListContent(
     ) {
         when (val state = uiStateProvider()) {
             is CharacterListUiState.InitialLoading -> {
-                InitialLoadingSkeleton()
+                CharacterListSkeleton()
 
                 LaunchedEffect(Unit) {
                     onRetry()
@@ -123,20 +112,6 @@ private fun CharacterListContent(
                     onRetry = onRetry
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun InitialLoadingSkeleton() {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(Dimens.spacingMedium),
-        verticalArrangement = Arrangement.spacedBy(Dimens.spacingMedium),
-        userScrollEnabled = false
-    ) {
-        items(8) {
-            CharacterItemSkeleton()
         }
     }
 }

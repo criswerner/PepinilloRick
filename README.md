@@ -27,8 +27,9 @@ Los usuarios pueden marcar personajes como favoritos para acceder a ellos rápid
 ### 🎭 Estados Reactivos Sellados
 Para evitar "estados imposibles", utilizamos `sealed interface` para representar el estado de cada pantalla de forma atómica (ej. `InitialLoading`, `InitialError`, `Success`). Esto garantiza que la UI sea determinista y fácil de razonar.
 
-### ⚡ Optimización de Recomposición
-Para garantizar un scroll suave a 60fps, hemos implementado:
+### ⚡ Optimización de Recomposición e Interfaz
+Para garantizar un scroll suave a 60fps y una UI reactiva, hemos implementado:
+*   **Lectura Diferida de Estado**: Separación de componentes en `Screen` (orquestación) y `Content` (visualización), pasando el estado mediante lambdas (`uiStateProvider`) para minimizar las recomposiciones innecesarias.
 *   **Colecciones Inmutables**: Uso de `kotlinx-collections-immutable` para que el compilador de Compose reconozca las listas como estables por naturaleza.
 *   **Anotación @Immutable**: Aplicada a los modelos de UI para permitir el "Skipping" de redibujado.
 *   **Lambdas Memorizadas**: Uso de `remember` para estabilizar callbacks entre componentes y evitar invalidaciones de capa.
