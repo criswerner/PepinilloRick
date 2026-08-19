@@ -12,7 +12,6 @@ import com.cristianwer.pepinillorick.domain.model.Resource
 import com.cristianwer.pepinillorick.domain.model.UiError
 import com.cristianwer.pepinillorick.domain.repository.CharacterRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -58,13 +57,11 @@ internal class CharacterRepositoryImpl @Inject constructor(
             val nextPage = if (isLastPage) pageToLoad else pageToLoad + 1
 
             refreshLocalDatabase(forceRefresh, entities, nextPage)
-            emitAll(localDbFlow.map { Resource.Success(it) })
+            val updatedData = getCharacters().first()
+            emit(Resource.Success(updatedData))
         } catch (e: Exception) {
             if (e is CancellationException) throw e
-
-            val uiError = getUiError(e)
-
-            emitAll(localDbFlow.map { Resource.Error(uiError, it) })
+            emit(Resource.Error(getUiError(e), cachedData))
         }
     }
 
