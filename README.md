@@ -1,6 +1,6 @@
 # Pepinillo Rick 🥒
 
-Una aplicación Android moderna y de alto rendimiento diseñada para explorar el universo de Rick & Morty. Este proyecto consume la [API pública de Rick & Morty](https://rickandmortyapi.com/documentation#rest) y enfocándose en la escalabilidad, el rendimiento y una experiencia de usuario inmersiva.
+Una aplicación Android moderna y de alto rendimiento diseñada para explorar el universo de Rick & Morty. Este proyecto consume la [API pública de Rick & Morty](https://rickandmortyapi.com/documentation#rest) y ha sido construido enfocándose en la escalabilidad, el rendimiento y una experiencia de usuario inmersiva.
 
 [Android Build](https://github.com/criswerner/PepinilloRick/actions)
 
@@ -8,11 +8,21 @@ Una aplicación Android moderna y de alto rendimiento diseñada para explorar el
 
 El proyecto implementa **Clean Architecture** dividida en tres capas fundamentales, garantizando una separación clara de responsabilidades y facilidad de testeo:
 
-*   **Capa de Dominio**: El corazón de la app. Contiene los modelos de negocio (`Character`), las interfaces de repositorio y los Casos de Uso (`GetCharactersUseCase`, `ToggleFavoriteUseCase`). Es puramente Kotlin y no tiene dependencias de Android, manteniendo la lógica de negocio aislada.
+*   **Capa de Dominio**: El corazón de la app. Contiene los modelos de negocio (`Character`), las interfaces de repositorio y los Casos de Uso (`GetCharactersUseCase`, `ToggleFavoriteUseCase`, `GetFavoriteCharactersUseCase`, `GetCharacterByIdUseCase`, `ObserveCharacterUseCase`). Es puramente Kotlin y no tiene dependencias de Android, manteniendo la lógica de negocio aislada.
 *   **Capa de Datos**: Implementa la lógica de persistencia y red. Utiliza **Room** como Fuente Única de Verdad (SSOT) y **Retrofit** para la comunicación con la API. Incluye mapeadores para transformar DTOs en entidades y modelos de dominio.
 *   **Capa de UI (Presentación)**: Basada en **Jetpack Compose** y el patrón **MVVM**. Implementa flujos de datos unidireccionales (UDF) para una gestión de estado predecible.
 
-## 🛠 Decisiones Técnicas y Enfoques
+## 🛠 Especificaciones Técnicas
+
+*   **Lenguaje**: 100% Kotlin.
+*   **Interfaz de Usuario**: 100% Jetpack Compose.
+*   **Build System**: Gradle con Kotlin DSL (`.kts`).
+*   **Android SDK**:
+    *   Min SDK: 24
+    *   Target SDK: 36
+    *   Compile SDK: 37 (Extension level 1)
+
+## 💡 Decisiones Técnicas y Enfoques
 
 ### 📡 Offline-First (Network Bound Resource)
 La aplicación prioriza la disponibilidad inmediata de los datos mediante el patrón **Network Bound Resource**:
@@ -30,9 +40,9 @@ Para evitar "estados imposibles", utilizamos `sealed interface` para representar
 ### ⚡ Optimización de Recomposición e Interfaz
 Para garantizar un scroll suave a 60fps y una UI reactiva, hemos implementado:
 *   **Lectura Diferida de Estado**: Separación de componentes en `Screen` (orquestación) y `Content` (visualización), pasando el estado mediante lambdas (`uiStateProvider`) para minimizar las recomposiciones innecesarias.
-*   **Colecciones Inmutables**: Uso de `kotlinx-collections-immutable` para que el compilador de Compose reconozca las listas como estables por naturaleza.
+*   **Colecciones Inmutables**: Uso de `kotlinx-collections-immutable` para que el compilador de Compose reconozca las listas como estables.
 *   **Anotación @Immutable**: Aplicada a los modelos de UI para permitir el "Skipping" de redibujado.
-*   **Lambdas Memorizadas**: Uso de `remember` para estabilizar callbacks entre componentes y evitar invalidaciones de capa.
+*   **Lambdas Memorizadas**: Uso de `remember` para estabilizar callbacks entre componentes.
 
 ### 🎨 Identidad Visual "Portal & Neon"
 *   **Diseño Custom**: Estética neón inspirada en la serie con efectos de resplandor y portales dimensionales.
