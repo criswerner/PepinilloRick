@@ -12,6 +12,7 @@ import com.cristianwer.pepinillorick.domain.model.Resource
 import com.cristianwer.pepinillorick.domain.model.UiError
 import com.cristianwer.pepinillorick.domain.repository.CharacterRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -43,7 +44,7 @@ internal class CharacterRepositoryImpl @Inject constructor(
         val cachedData = localDbFlow.first()
 
         emit(Resource.Loading(cachedData))
-
+        var syncError: UiError? = null
         try {
             val pageToLoad = if (forceRefresh) {
                 1
@@ -57,12 +58,18 @@ internal class CharacterRepositoryImpl @Inject constructor(
             val nextPage = if (isLastPage) pageToLoad else pageToLoad + 1
 
             refreshLocalDatabase(forceRefresh, entities, nextPage)
-            val updatedData = getCharacters().first()
-            emit(Resource.Success(updatedData))
+
         } catch (e: Exception) {
             if (e is CancellationException) throw e
-            emit(Resource.Error(getUiError(e), cachedData))
+            syncError = getUiError(e)
         }
+        emitAll(localDbFlow.map { updatedData ->
+            if (syncError != null) {
+                Resource.Error(syncError, updatedData)
+            } else {
+                Resource.Success(updatedData)
+            }
+        })
     }
 
     override fun getFavoriteCharacters(): Flow<List<Character>> {
