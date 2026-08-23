@@ -73,6 +73,7 @@ La aplicación utiliza **GitHub Actions** para CI/CD. Cada versión estable gene
 
 *   **Paginación Manual vs Paging 3**: Se optó por una gestión manual de la paginación con `RemoteKeys` para **preservar la pureza de la capa de dominio**. El uso de Paging 3 habría forzado dependencias de `androidx.paging` (PagingData) en el dominio, contaminando una capa que debe ser puramente agnóstica a la plataforma. La paginación manual nos otorga control total sobre la Fuente Única de Verdad y simplifica los estados de carga.
 *   **Single Module vs Multi-module**: Aunque el proyecto cuenta con estructura modular (`:app`, `:platform`), se prioriza una separación lógica clara por paquetes para agilizar el desarrollo manteniendo la escalabilidad futura.
+*    **Busqueda manual**: No se ha implementado por falta de tiempo.
 
 ---
 Desarrollado con 🥒 por [Cristian Werner](https://github.com/criswerner)
