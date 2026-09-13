@@ -7,6 +7,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -43,7 +45,6 @@ internal class MainActivity : ComponentActivity() {
         }
     }
 }
-
 @Composable
 private fun RickAndMortyApp() {
     val navController = rememberNavController()
@@ -52,10 +53,10 @@ private fun RickAndMortyApp() {
         navController = navController,
         startDestination = "main_tabs",
         modifier = Modifier.fillMaxSize(),
-        enterTransition = { fadeIn(animationSpec = tween(500)) },
-        exitTransition = { fadeOut(animationSpec = tween(500)) },
-        popEnterTransition = { fadeIn(animationSpec = tween(500)) },
-        popExitTransition = { fadeOut(animationSpec = tween(500)) }
+        enterTransition = { fadeIn(animationSpec = tween(400)) },
+        exitTransition = { fadeOut(animationSpec = tween(400)) },
+        popEnterTransition = { fadeIn(animationSpec = tween(400)) },
+        popExitTransition = { fadeOut(animationSpec = tween(400)) }
     ) {
         composable("main_tabs") {
             MainNavScreen(
@@ -64,7 +65,28 @@ private fun RickAndMortyApp() {
         }
         composable(
             route = "character_detail/{characterId}",
-            arguments = listOf(navArgument("characterId") { type = NavType.IntType })
+            arguments = listOf(navArgument("characterId") { type = NavType.IntType }),
+            enterTransition = {
+                slideInVertically(
+                    initialOffsetY = { fullHeight -> fullHeight / 6 },
+                    animationSpec = tween(400)
+                ) + fadeIn(animationSpec = tween(400))
+            },
+            exitTransition = {
+                slideOutVertically(
+                    targetOffsetY = { fullHeight -> fullHeight / 6 },
+                    animationSpec = tween(300)
+                ) + fadeOut(animationSpec = tween(300))
+            },
+            popEnterTransition = {
+                fadeIn(animationSpec = tween(300))
+            },
+            popExitTransition = {
+                slideOutVertically(
+                    targetOffsetY = { fullHeight -> fullHeight / 4 },
+                    animationSpec = tween(350)
+                ) + fadeOut(animationSpec = tween(350))
+            }
         ) {
             CharacterDetailScreen(
                 viewModel = hiltViewModel(),
