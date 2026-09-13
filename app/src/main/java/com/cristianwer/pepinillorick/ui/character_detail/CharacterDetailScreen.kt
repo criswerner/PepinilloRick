@@ -1,5 +1,11 @@
 package com.cristianwer.pepinillorick.ui.character_detail
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -12,7 +18,11 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,20 +30,29 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cristianwer.pepinillorick.R
 import com.cristianwer.pepinillorick.ui.components.CustomAsyncImage
 import com.cristianwer.pepinillorick.ui.components.FavoriteButton
+import com.cristianwer.pepinillorick.ui.components.FloatingHeartsOverlay
 import com.cristianwer.pepinillorick.ui.mapper.getColor
 import com.cristianwer.pepinillorick.ui.mapper.getIcon
 import com.cristianwer.pepinillorick.ui.model.CharacterDetailUiModel
 import com.cristianwer.pepinillorick.ui.theme.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.math.sin
+import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,6 +62,20 @@ internal fun CharacterDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val colorScheme = MaterialTheme.colorScheme
+
+    val character = (uiState as? CharacterDetailUiState.Success)?.character
+    var favoriteAnimationTrigger by remember { mutableStateOf(0) }
+    var previousIsFavorite by remember { mutableStateOf<Boolean?>(null) }
+
+    LaunchedEffect(character?.isFavorite) {
+        val isFav = character?.isFavorite
+        if (isFav == true && previousIsFavorite == false) {
+            favoriteAnimationTrigger += 1
+        }
+        if (isFav != null) {
+            previousIsFavorite = isFav
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -66,7 +99,6 @@ internal fun CharacterDetailScreen(
                     }
                 },
                 actions = {
-                    val character = (uiState as? CharacterDetailUiState.Success)?.character
                     if (character != null) {
                         FavoriteButton(
                             isFavorite = character.isFavorite,
@@ -119,6 +151,12 @@ internal fun CharacterDetailScreen(
                     )
                 }
             }
+
+            FloatingHeartsOverlay(
+                triggerKey = favoriteAnimationTrigger,
+                modifier = Modifier.fillMaxSize(),
+                primaryColor = colorScheme.primary
+            )
         }
     }
 }
@@ -126,6 +164,44 @@ internal fun CharacterDetailScreen(
 @Composable
 private fun CharacterDetailContent(character: CharacterDetailUiModel) {
     val colorScheme = MaterialTheme.colorScheme
+
+    val avatarScale = remember { Animatable(0.1f) }
+    val avatarAlpha = remember { Animatable(0f) }
+    val labelProgress = remember { Animatable(0f) }
+    val valueAlpha = remember { Animatable(0f) }
+
+    LaunchedEffect(character.id) {
+        avatarScale.snapTo(0.1f)
+        avatarAlpha.snapTo(0f)
+        labelProgress.snapTo(0f)
+        valueAlpha.snapTo(0f)
+
+        launch {
+            avatarAlpha.animateTo(1f, animationSpec = tween(300))
+        }
+        launch {
+            avatarScale.animateTo(
+                targetValue = 1f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                )
+            )
+        }
+
+        delay(150)
+
+        labelProgress.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing)
+        )
+
+        valueAlpha.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 350)
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -137,6 +213,11 @@ private fun CharacterDetailContent(character: CharacterDetailUiModel) {
             modifier = Modifier
                 .size(Dimens.characterDetailPortalSize)
                 .padding(Dimens.spacingSmall)
+                .graphicsLayer {
+                    scaleX = avatarScale.value
+                    scaleY = avatarScale.value
+                    alpha = avatarAlpha.value
+                }
                 .shadow(
                     elevation = Dimens.shadowLarge,
                     shape = CircleShape,
@@ -169,18 +250,30 @@ private fun CharacterDetailContent(character: CharacterDetailUiModel) {
 
         Spacer(modifier = Modifier.height(Dimens.spacingLarge))
 
-        NameWithGlowCharacter(character)
+        NameWithGlowCharacter(
+            character = character,
+            labelProgress = labelProgress.value,
+            valueAlpha = valueAlpha.value
+        )
 
         Spacer(modifier = Modifier.height(Dimens.spacingExtraLarge))
 
-        DetailCardCharacter(character)
+        DetailCardCharacter(
+            character = character,
+            labelProgress = labelProgress.value,
+            valueAlpha = valueAlpha.value
+        )
 
         Spacer(modifier = Modifier.height(Dimens.spacingExtraLarge))
     }
 }
 
 @Composable
-private fun NameWithGlowCharacter(character: CharacterDetailUiModel) {
+private fun NameWithGlowCharacter(
+    character: CharacterDetailUiModel,
+    labelProgress: Float,
+    valueAlpha: Float
+) {
     val colorScheme = MaterialTheme.colorScheme
     Text(
         text = character.name.uppercase(),
@@ -190,51 +283,74 @@ private fun NameWithGlowCharacter(character: CharacterDetailUiModel) {
             shadow = Shadow(color = colorScheme.primary, blurRadius = 10f)
         ),
         color = colorScheme.onBackground,
-        textAlign = TextAlign.Center
+        textAlign = TextAlign.Center,
+        modifier = Modifier.graphicsLayer {
+            translationX = (-50.dp * (1f - labelProgress)).toPx()
+            alpha = labelProgress
+        }
     )
 
     Text(
         text = "${character.species}, ${character.locationName}",
         style = MaterialTheme.typography.bodyMedium,
         color = colorScheme.onSurfaceVariant,
-        textAlign = TextAlign.Center
+        textAlign = TextAlign.Center,
+        modifier = Modifier.graphicsLayer {
+            alpha = valueAlpha
+        }
     )
 }
 
 @Composable
-private fun DetailCardCharacter(character: CharacterDetailUiModel) {
+private fun DetailCardCharacter(
+    character: CharacterDetailUiModel,
+    labelProgress: Float,
+    valueAlpha: Float
+) {
     val colorScheme = MaterialTheme.colorScheme
     DetailItem(
         icon = Icons.Default.Favorite,
         label = stringResource(id = R.string.character_detail_status).uppercase(),
         value = character.status.value,
-        valueColor = character.status.getColor(colorScheme)
+        valueColor = character.status.getColor(colorScheme),
+        labelProgress = labelProgress,
+        valueAlpha = valueAlpha
     )
     DetailItem(
         icon = Icons.Default.Science,
         label = stringResource(id = R.string.character_detail_species).uppercase(),
-        value = character.species
+        value = character.species,
+        labelProgress = labelProgress,
+        valueAlpha = valueAlpha
     )
     DetailItem(
         icon = character.gender.getIcon(),
         label = stringResource(id = R.string.character_detail_gender).uppercase(),
-        value = character.gender.value
+        value = character.gender.value,
+        labelProgress = labelProgress,
+        valueAlpha = valueAlpha
     )
     DetailItem(
         icon = Icons.Default.AutoAwesome,
         label = stringResource(id = R.string.character_detail_origin).uppercase(),
-        value = character.originName
+        value = character.originName,
+        labelProgress = labelProgress,
+        valueAlpha = valueAlpha
     )
     DetailItem(
         icon = Icons.Default.LocationOn,
         label = stringResource(id = R.string.character_detail_location).uppercase(),
-        value = character.locationName
+        value = character.locationName,
+        labelProgress = labelProgress,
+        valueAlpha = valueAlpha
     )
     DetailItem(
         icon = Icons.Default.Movie,
         label = stringResource(id = R.string.character_detail_episodes).uppercase(),
         value = character.episodeCount.toString(),
-        showStar = true
+        showStar = true,
+        labelProgress = labelProgress,
+        valueAlpha = valueAlpha
     )
 }
 
@@ -244,7 +360,9 @@ private fun DetailItem(
     label: String,
     value: String,
     valueColor: Color = MaterialTheme.colorScheme.onSurface,
-    showStar: Boolean = false
+    showStar: Boolean = false,
+    labelProgress: Float = 1f,
+    valueAlpha: Float = 1f
 ) {
     val colorScheme = MaterialTheme.colorScheme
     Card(
@@ -262,24 +380,36 @@ private fun DetailItem(
                 .padding(horizontal = Dimens.spacingMedium, vertical = Dimens.spacingSmall),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = colorScheme.primary,
-                modifier = Modifier.size(Dimens.iconSizeMedium)
-            )
-            Spacer(modifier = Modifier.width(Dimens.spacingMedium))
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodySmall,
-                color = colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Visible
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.graphicsLayer {
+                    translationX = (-40.dp * (1f - labelProgress)).toPx()
+                    alpha = labelProgress
+                }
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = colorScheme.primary,
+                    modifier = Modifier.size(Dimens.iconSizeMedium)
+                )
+                Spacer(modifier = Modifier.width(Dimens.spacingMedium))
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Visible
+                )
+            }
             Spacer(modifier = Modifier.width(Dimens.spacingSmall))
             
             Row(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .graphicsLayer {
+                        alpha = valueAlpha
+                    },
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {

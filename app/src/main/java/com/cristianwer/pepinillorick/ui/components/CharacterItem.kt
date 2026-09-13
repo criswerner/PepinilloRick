@@ -5,7 +5,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +35,7 @@ internal fun CharacterItem(
     onFavoriteToggle: (Int, Boolean) -> Unit
 ) {
     val colorScheme = MaterialTheme.colorScheme
+    var burstTrigger by remember { mutableStateOf(0) }
     val brushCardColors = remember(colorScheme) {
         Brush.linearGradient(
             listOf(
@@ -125,11 +129,25 @@ internal fun CharacterItem(
                 )
             }
             
-            FavoriteButton(
-                isFavorite = character.isFavorite,
-                onFavoriteClick = { onFavoriteToggle(character.id, !character.isFavorite) },
-                favoriteColor = colorScheme.primary
-            )
+            Box(contentAlignment = Alignment.Center) {
+                FavoriteButton(
+                    isFavorite = character.isFavorite,
+                    onFavoriteClick = {
+                        val newFavState = !character.isFavorite
+                        if (newFavState) {
+                            burstTrigger += 1
+                        }
+                        onFavoriteToggle(character.id, newFavState)
+                    },
+                    favoriteColor = colorScheme.primary
+                )
+
+                LocalFloatingHeartsBurst(
+                    triggerKey = burstTrigger,
+                    particleCount = 5,
+                    primaryColor = colorScheme.primary
+                )
+            }
         }
     }
 }
