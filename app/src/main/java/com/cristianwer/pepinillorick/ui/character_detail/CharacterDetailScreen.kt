@@ -54,13 +54,27 @@ import kotlinx.coroutines.launch
 import kotlin.math.sin
 import kotlin.random.Random
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun CharacterDetailScreen(
     viewModel: CharacterDetailViewModel,
     onBackClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    CharacterDetailContent(
+        uiState = uiState,
+        onBackClick = onBackClick,
+        onFavoriteToggle = viewModel::toggleFavorite
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun CharacterDetailContent(
+    uiState: CharacterDetailUiState,
+    onBackClick: () -> Unit,
+    onFavoriteToggle: () -> Unit
+) {
     val colorScheme = MaterialTheme.colorScheme
 
     val character = (uiState as? CharacterDetailUiState.Success)?.character
@@ -102,7 +116,7 @@ internal fun CharacterDetailScreen(
                     if (character != null) {
                         FavoriteButton(
                             isFavorite = character.isFavorite,
-                            onFavoriteClick = { viewModel.toggleFavorite() },
+                            onFavoriteClick = onFavoriteToggle,
                             favoriteColor = colorScheme.primary
                         )
                     } else {
@@ -140,7 +154,7 @@ internal fun CharacterDetailScreen(
                 }
 
                 is CharacterDetailUiState.Success -> {
-                    CharacterDetailContent(character = state.character)
+                    CharacterDetailSuccessContent(character = state.character)
                 }
 
                 is CharacterDetailUiState.Error -> {
@@ -162,7 +176,7 @@ internal fun CharacterDetailScreen(
 }
 
 @Composable
-private fun CharacterDetailContent(character: CharacterDetailUiModel) {
+private fun CharacterDetailSuccessContent(character: CharacterDetailUiModel) {
     val colorScheme = MaterialTheme.colorScheme
 
     val avatarScale = remember { Animatable(0.1f) }
