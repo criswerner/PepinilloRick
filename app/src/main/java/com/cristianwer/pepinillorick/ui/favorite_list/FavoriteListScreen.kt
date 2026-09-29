@@ -38,7 +38,7 @@ internal fun FavoriteListScreen(
 }
 
 @Composable
-private fun FavoriteListContent(
+internal fun FavoriteListContent(
     uiStateProvider: () -> FavoriteListUiState,
     onCharacterClick: (Int) -> Unit,
     onFavoriteToggle: (Int, Boolean) -> Unit
